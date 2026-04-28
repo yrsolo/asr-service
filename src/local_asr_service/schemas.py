@@ -41,6 +41,7 @@ class HealthResponse(BaseModel):
     backend: str
     default_model: str
     gpu_available: bool
+    cuda_device_index: int | None = None
 
 
 class ModelInfo(BaseModel):
@@ -48,6 +49,7 @@ class ModelInfo(BaseModel):
     backend: str
     model_name: str
     device: str
+    device_index: int | None = None
     compute_type: str
     languages: list[str]
     description: str = ""

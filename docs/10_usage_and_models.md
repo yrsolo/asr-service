@@ -47,6 +47,15 @@ LOCAL_ASR_DEBUG_TRANSCRIPTS=false
 
 For LAN mode set `LOCAL_ASR_HOST=0.0.0.0`, configure firewall rules, and set `LOCAL_ASR_API_KEY`.
 
+For multi-GPU hosts:
+
+```dotenv
+NVIDIA_VISIBLE_DEVICES=1
+LOCAL_ASR_CUDA_DEVICE_INDEX=0
+```
+
+`NVIDIA_VISIBLE_DEVICES` selects the host GPU exposed to Docker. `LOCAL_ASR_CUDA_DEVICE_INDEX` selects the CUDA device index visible inside the service process.
+
 ## Model Profiles
 
 Profiles live in `config/models.example.yaml`.

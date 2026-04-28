@@ -12,6 +12,7 @@ class ModelProfile(BaseModel):
     backend: Literal["mock", "faster_whisper", "whisper_cpp"]
     model_name: str
     device: str = "auto"
+    device_index: int | None = None
     compute_type: str = "auto"
     languages: list[str] = Field(default_factory=lambda: ["ru", "en", "auto"])
     description: str = ""
@@ -42,6 +43,7 @@ class Settings(BaseSettings):
 
     default_model: str = "mock"
     models_config: str = "config/models.example.yaml"
+    cuda_device_index: int | None = None
 
     save_audio: bool = False
     save_transcripts: bool = False

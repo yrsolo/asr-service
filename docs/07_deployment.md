@@ -38,8 +38,24 @@ http://<gpu-machine-ip>:8765
 
 ## Docker
 
-Docker GPU requires NVIDIA Container Toolkit. Use after native MVP works.
+For CPU/dev image:
 
 ```bash
 docker compose up --build
 ```
+
+For GPU deployment on another machine:
+
+```bash
+cp .env.example .env
+docker compose -f docker-compose.gpu.yml up --build -d
+```
+
+Select a specific host GPU in `.env`:
+
+```dotenv
+NVIDIA_VISIBLE_DEVICES=1
+LOCAL_ASR_CUDA_DEVICE_INDEX=0
+```
+
+See `docs/11_docker_gpu_deployment.md` for the complete multi-GPU Docker guide.

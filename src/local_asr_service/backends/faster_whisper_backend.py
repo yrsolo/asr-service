@@ -3,6 +3,7 @@ from tempfile import NamedTemporaryFile
 from uuid import uuid4
 
 from local_asr_service.backends.base import ASRBackend, TranscriptionResult
+from local_asr_service.config import get_settings
 from local_asr_service.schemas import AudioSource, SegmentStatus, Speaker, TranscriptSegment
 
 
@@ -21,11 +22,19 @@ class FasterWhisperBackend(ASRBackend):
         if self._model is None:
             from faster_whisper import WhisperModel
 
-            self._model = WhisperModel(
-                self.profile.model_name,
-                device=self.profile.device,
-                compute_type=self.profile.compute_type,
-            )
+            settings = get_settings()
+            device_index = settings.cuda_device_index
+            if device_index is None:
+                device_index = self.profile.device_index
+
+            kwargs = {
+                "device": self.profile.device,
+                "compute_type": self.profile.compute_type,
+            }
+            if device_index is not None and self.profile.device == "cuda":
+                kwargs["device_index"] = device_index
+
+            self._model = WhisperModel(self.profile.model_name, **kwargs)
         return self._model
 
     def transcribe_bytes(

@@ -1,0 +1,27 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV HF_HOME=/models/hf
+ENV LD_LIBRARY_PATH=/usr/local/lib/python3.11/site-packages/nvidia/cublas/lib:/usr/local/lib/python3.11/site-packages/nvidia/cudnn/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    libgomp1 \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml README.md /app/
+COPY src /app/src
+COPY config /app/config
+COPY scripts /app/scripts
+
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -e . \
+    && pip install --no-cache-dir "nvidia-cublas-cu12" "nvidia-cudnn-cu12==9.*"
+
+EXPOSE 8765
+
+CMD ["python", "-m", "local_asr_service.main"]

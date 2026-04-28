@@ -14,6 +14,7 @@ models:
     backend: mock
     model_name: mock
     device: cpu
+    device_index:
     compute_type: auto
     beam_size: 1
     vad_filter: false
@@ -23,6 +24,7 @@ models:
     backend: faster_whisper
     model_name: tiny
     device: cpu
+    device_index:
     compute_type: int8
     beam_size: 1
     vad_filter: true
@@ -32,6 +34,7 @@ models:
     backend: faster_whisper
     model_name: small
     device: cuda
+    device_index:
     compute_type: int8
     beam_size: 3
     vad_filter: true
@@ -41,6 +44,7 @@ models:
     backend: faster_whisper
     model_name: medium
     device: cuda
+    device_index:
     compute_type: int8_float16
     beam_size: 5
     vad_filter: true
@@ -50,6 +54,7 @@ models:
     backend: faster_whisper
     model_name: large-v3-turbo
     device: cuda
+    device_index:
     compute_type: int8_float16
     beam_size: 5
     vad_filter: true
@@ -95,3 +100,9 @@ Interpretation:
 GTX 1080 Ti has 11 GB VRAM but no tensor cores. Benchmark exact profiles on target hardware. Do not assume the largest model is best for live latency.
 
 Modern `faster-whisper`/CTranslate2 GPU builds are CUDA-version sensitive. If CUDA loading fails, verify NVIDIA driver, CUDA runtime, cuDNN, and CTranslate2 version compatibility before changing API code.
+
+## Multi-GPU Selection
+
+Prefer selecting the GPU at container runtime with `NVIDIA_VISIBLE_DEVICES`. If only one host GPU is exposed to the container, set `LOCAL_ASR_CUDA_DEVICE_INDEX=0`.
+
+For advanced cases, set `device_index` on a model profile. The environment variable `LOCAL_ASR_CUDA_DEVICE_INDEX` overrides profile-level `device_index`.

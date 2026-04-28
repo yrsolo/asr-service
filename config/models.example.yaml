@@ -5,6 +5,7 @@ models:
     backend: mock
     model_name: mock
     device: cpu
+    device_index:
     compute_type: auto
     languages: [ru, en, auto]
     description: Development backend that returns deterministic fake transcript.
@@ -16,6 +17,7 @@ models:
     backend: faster_whisper
     model_name: tiny
     device: cpu
+    device_index:
     compute_type: int8
     languages: [ru, en, auto]
     description: Tiny CPU smoke-test profile; useful before CUDA is ready.
@@ -27,6 +29,7 @@ models:
     backend: faster_whisper
     model_name: small
     device: cuda
+    device_index:
     compute_type: int8
     languages: [ru, en, auto]
     description: Fast low-memory baseline.
@@ -38,6 +41,7 @@ models:
     backend: faster_whisper
     model_name: medium
     device: cuda
+    device_index:
     compute_type: int8_float16
     languages: [ru, en, auto]
     description: Recommended first serious test on GTX 1080 Ti.
@@ -49,6 +53,7 @@ models:
     backend: faster_whisper
     model_name: large-v3-turbo
     device: cuda
+    device_index:
     compute_type: int8_float16
     languages: [ru, en, auto]
     description: Quality/speed candidate; benchmark on target hardware.

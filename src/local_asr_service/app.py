@@ -92,12 +92,14 @@ def create_app() -> FastAPI:
     @app.get("/health", response_model=HealthResponse, tags=["system"])
     async def health() -> HealthResponse:
         cfg = load_models_config()
+        settings = get_settings()
         profile = cfg.get_profile(cfg.default_model)
         return HealthResponse(
             version=__version__,
             backend=profile.backend,
             default_model=cfg.default_model,
             gpu_available=_is_gpu_available(),
+            cuda_device_index=settings.cuda_device_index,
         )
 
     @app.get(

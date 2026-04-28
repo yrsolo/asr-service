@@ -91,11 +91,13 @@ Response:
   "version": "0.1.0",
   "backend": "mock",
   "default_model": "mock",
-  "gpu_available": false
+  "gpu_available": false,
+  "cuda_device_index": null
 }
 ```
 
 `gpu_available` is best-effort CUDA detection through CTranslate2.
+`cuda_device_index` is the runtime override from `LOCAL_ASR_CUDA_DEVICE_INDEX`.
 
 ## GET /v1/models
 
@@ -110,6 +112,7 @@ Response:
       "backend": "mock",
       "model_name": "mock",
       "device": "cpu",
+      "device_index": null,
       "compute_type": "auto",
       "languages": ["ru", "en", "auto"],
       "description": "Development backend",

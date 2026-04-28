@@ -73,6 +73,24 @@ python scripts/download_models.py --models fw-small-int8,fw-medium-int8-fp16
 
 See `docs/10_usage_and_models.md` for the full setup, model selection notes, and benchmark flow.
 
+## Docker GPU Deployment
+
+For a separate GPU machine, use:
+
+```bash
+cp .env.example .env
+docker compose -f docker-compose.gpu.yml up --build -d
+```
+
+Pick the host GPU in `.env`:
+
+```dotenv
+NVIDIA_VISIBLE_DEVICES=0
+LOCAL_ASR_CUDA_DEVICE_INDEX=0
+```
+
+See `docs/11_docker_gpu_deployment.md`.
+
 ## First Development Strategy
 
 Start with the mock backend and contracts. Then connect faster-whisper. Do not implement capture or desktop UI here.
