@@ -1,0 +1,57 @@
+default_model: mock
+
+models:
+  - id: mock
+    backend: mock
+    model_name: mock
+    device: cpu
+    compute_type: auto
+    languages: [ru, en, auto]
+    description: Development backend that returns deterministic fake transcript.
+    beam_size: 1
+    vad_filter: false
+    download: false
+
+  - id: fw-tiny-cpu
+    backend: faster_whisper
+    model_name: tiny
+    device: cpu
+    compute_type: int8
+    languages: [ru, en, auto]
+    description: Tiny CPU smoke-test profile; useful before CUDA is ready.
+    beam_size: 1
+    vad_filter: true
+    download: true
+
+  - id: fw-small-int8
+    backend: faster_whisper
+    model_name: small
+    device: cuda
+    compute_type: int8
+    languages: [ru, en, auto]
+    description: Fast low-memory baseline.
+    beam_size: 3
+    vad_filter: true
+    download: true
+
+  - id: fw-medium-int8-fp16
+    backend: faster_whisper
+    model_name: medium
+    device: cuda
+    compute_type: int8_float16
+    languages: [ru, en, auto]
+    description: Recommended first serious test on GTX 1080 Ti.
+    beam_size: 5
+    vad_filter: true
+    download: true
+
+  - id: fw-large-v3-turbo-int8-fp16
+    backend: faster_whisper
+    model_name: large-v3-turbo
+    device: cuda
+    compute_type: int8_float16
+    languages: [ru, en, auto]
+    description: Quality/speed candidate; benchmark on target hardware.
+    beam_size: 5
+    vad_filter: true
+    download: true

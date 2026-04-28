@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Local ASR Service</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --accent: #156c5a;
+      --accent-strong: #0f5a4b;
+      --danger: #b42318;
+      --soft: #edf7f4;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .status {
+      min-width: 210px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .status strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--ink);
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(23, 32, 51, 0.06);
+    }
+
+    label {
+      display: block;
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    select, input[type="text"], input[type="file"] {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 9px 11px;
+      font: inherit;
+    }
+
+    .field { margin-bottom: 14px; }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    button {
+      width: 100%;
+      min-height: 44px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    button:hover { background: var(--accent-strong); }
+    button:disabled { opacity: 0.55; cursor: wait; }
+
+    .result-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .result-head h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .pill {
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--accent-strong);
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    pre {
+      min-height: 260px;
+      margin: 0;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #101828;
+      color: #edf2f7;
+      padding: 16px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .transcript {
+      margin: 0 0 14px;
+      border-left: 4px solid var(--accent);
+      padding: 12px 14px;
+      background: #fbfdfc;
+      border-radius: 0 8px 8px 0;
+      line-height: 1.6;
+    }
+
+    .error {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    @media (max-width: 860px) {
+      header, .layout { display: block; }
+      .status { margin-top: 16px; }
+      .panel { margin-bottom: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Local ASR Service</h1>
+        <p class="subtitle">Тестовая панель для проверки локального распознавания: выберите модель, загрузите WAV или MP3 и посмотрите сырой ответ API.</p>
+      </div>
+      <div class="status" id="health">
+        <strong>Статус</strong>
+        Проверяю сервис...
+      </div>
+    </header>
+
+    <section class="layout">
+      <form class="panel" id="form">
+        <div class="field">
+          <label for="file">Аудиофайл</label>
+          <input id="file" name="file" type="file" accept=".wav,.mp3,audio/wav,audio/mpeg,audio/mp3" required>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="model">Модель</label>
+            <select id="model" name="model_id"></select>
+          </div>
+          <div class="field">
+            <label for="language">Язык</label>
+            <select id="language" name="language">
+              <option value="auto">auto</option>
+              <option value="ru">ru</option>
+              <option value="en">en</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="source">Источник</label>
+          <select id="source" name="source">
+            <option value="unknown">unknown</option>
+            <option value="mic">mic</option>
+            <option value="system">system</option>
+            <option value="mixed">mixed</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="apiKey">API key</label>
+          <input id="apiKey" type="text" autocomplete="off" placeholder="Оставьте пустым, если ключ выключен">
+        </div>
+
+        <button id="submit" type="submit">Распознать</button>
+      </form>
+
+      <section class="panel">
+        <div class="result-head">
+          <h2>Результат</h2>
+          <span class="pill" id="meta">ожидание файла</span>
+        </div>
+        <div id="transcript" class="transcript">Текст появится здесь после распознавания.</div>
+        <pre id="json">{}</pre>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#form");
+    const submit = document.querySelector("#submit");
+    const modelSelect = document.querySelector("#model");
+    const healthBox = document.querySelector("#health");
+    const jsonBox = document.querySelector("#json");
+    const transcriptBox = document.querySelector("#transcript");
+    const metaBox = document.querySelector("#meta");
+
+    function authHeaders() {
+      const key = document.querySelector("#apiKey").value.trim();
+      return key ? { Authorization: `Bearer ${key}` } : {};
+    }
+
+    function showError(message) {
+      transcriptBox.innerHTML = `<span class="error">${message}</span>`;
+      metaBox.textContent = "ошибка";
+    }
+
+    async function loadHealth() {
+      const response = await fetch("/health");
+      const data = await response.json();
+      healthBox.innerHTML = `<strong>${data.status.toUpperCase()} · ${data.version}</strong>${data.default_model} · GPU: ${data.gpu_available ? "yes" : "no"}`;
+    }
+
+    async function loadModels() {
+      const response = await fetch("/v1/models", { headers: authHeaders() });
+      if (!response.ok) {
+        modelSelect.innerHTML = `<option value="mock">mock</option>`;
+        return;
+      }
+      const data = await response.json();
+      modelSelect.innerHTML = "";
+      for (const model of data.models) {
+        const option = document.createElement("option");
+        option.value = model.id;
+        option.textContent = `${model.id} (${model.backend})`;
+        option.selected = model.id === data.default_model;
+        modelSelect.appendChild(option);
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const file = document.querySelector("#file").files[0];
+      if (!file) return;
+
+      const body = new FormData();
+      body.append("file", file);
+      body.append("model_id", modelSelect.value);
+      body.append("language", document.querySelector("#language").value);
+      body.append("source", document.querySelector("#source").value);
+
+      submit.disabled = true;
+      metaBox.textContent = "распознаю...";
+      transcriptBox.textContent = "Идет обработка аудио.";
+      jsonBox.textContent = "{}";
+
+      try {
+        const response = await fetch("/v1/transcribe/file", {
+          method: "POST",
+          headers: authHeaders(),
+          body,
+        });
+        const data = await response.json();
+        jsonBox.textContent = JSON.stringify(data, null, 2);
+        if (!response.ok) {
+          showError(data.detail || "Ошибка API");
+          return;
+        }
+        transcriptBox.textContent = data.text || data.segments.map((s) => s.text).join(" ");
+        metaBox.textContent = `${data.processing_ms} ms · ${data.model_id}`;
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        submit.disabled = false;
+      }
+    });
+
+    document.querySelector("#apiKey").addEventListener("change", loadModels);
+    loadHealth().catch((error) => showError(error.message));
+    loadModels().catch(() => {
+      modelSelect.innerHTML = `<option value="mock">mock</option>`;
+    });
+  </script>
+</body>
+</html>

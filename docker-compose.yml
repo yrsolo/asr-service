@@ -1,0 +1,17 @@
+services:
+  local-asr-service:
+    build: .
+    ports:
+      - "8765:8765"
+    env_file:
+      - .env
+    environment:
+      LOCAL_ASR_HOST: "0.0.0.0"
+    # Enable later after NVIDIA Container Toolkit is configured:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
