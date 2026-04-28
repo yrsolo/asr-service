@@ -23,14 +23,70 @@ This service does **not** handle:
 - Markdown suggestion cards;
 - desktop overlay UI.
 
-## Quick Start
+## Quick Start: Docker GPU
+
+Use this path on the separate GPU machine.
+
+1. Install NVIDIA driver, Docker, and NVIDIA Container Toolkit.
+2. Check which GPUs are available:
+
+```bash
+nvidia-smi
+```
+
+3. Create `.env`:
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -e ".[dev]"
 copy .env.example .env
-python -m local_asr_service.main
+```
+
+4. Edit `.env`.
+
+Pick the model:
+
+```dotenv
+LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8-fp16
+```
+
+Useful model ids:
+
+- `mock`: fake transcript for API/UI smoke test.
+- `fw-small-int8`: fast CUDA baseline.
+- `fw-medium-int8-fp16`: recommended first real GPU model.
+- `fw-large-v3-turbo-int8-fp16`: best quality candidate, benchmark before live use.
+
+Pick the GPU:
+
+```dotenv
+NVIDIA_VISIBLE_DEVICES=0
+LOCAL_ASR_CUDA_DEVICE_INDEX=0
+```
+
+For several GPUs, view stable ids:
+
+```bash
+nvidia-smi --query-gpu=index,uuid,name --format=csv
+```
+
+Example: use host GPU `1`, exposed as device `0` inside the container:
+
+```dotenv
+NVIDIA_VISIBLE_DEVICES=1
+LOCAL_ASR_CUDA_DEVICE_INDEX=0
+```
+
+5. Start the container.
+
+Windows:
+
+```powershell
+scripts\run_docker_gpu.cmd
+```
+
+Linux:
+
+```bash
+docker compose -f docker-compose.gpu.yml up --build -d
 ```
 
 Health check:
@@ -49,6 +105,18 @@ OpenAPI docs:
 
 ```text
 http://127.0.0.1:8765/docs
+```
+
+Full deployment guide: `docs/11_docker_gpu_deployment.md`.
+
+## Local Python Development
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -e ".[dev]"
+copy .env.example .env
+python -m local_asr_service.main
 ```
 
 ## Endpoints

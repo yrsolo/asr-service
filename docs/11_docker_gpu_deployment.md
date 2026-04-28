@@ -60,6 +60,14 @@ Also configure firewall rules so only trusted client machines can reach port `87
 
 Build and start:
 
+Windows:
+
+```cmd
+scripts\run_docker_gpu.cmd
+```
+
+Linux:
+
 ```bash
 docker compose -f docker-compose.gpu.yml up --build -d
 ```
