@@ -80,6 +80,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Debug faster-whisper model loading and CUDA memory.")
     parser.add_argument("--model", default=None, help="Model profile id. Defaults to LOCAL_ASR_DEFAULT_MODEL.")
     parser.add_argument("--language", default="ru")
+    parser.add_argument("--device-index", type=int, default=None, help="Override CUDA device index.")
     parser.add_argument("--audio-file", type=Path, default=None, help="Optional audio file to transcribe.")
     parser.add_argument("--skip-transcribe", action="store_true", help="Only load the model.")
     args = parser.parse_args()
@@ -87,7 +88,9 @@ def main() -> None:
     settings = get_settings()
     cfg = load_models_config()
     profile = cfg.get_profile(args.model)
-    device_index = settings.cuda_device_index
+    device_index = args.device_index
+    if device_index is None:
+        device_index = settings.cuda_device_index
     if device_index is None:
         device_index = profile.device_index
     if device_index is None:

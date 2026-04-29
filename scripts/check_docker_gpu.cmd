@@ -21,7 +21,7 @@ if errorlevel 1 (
 
 echo.
 echo [local-asr-service] CTranslate2 compute types inside the container:
-docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/check_gpu_compute_types.py --device cuda --device-index 0
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/check_gpu_compute_types.py --device cuda
 if errorlevel 1 (
   echo [local-asr-service] CTranslate2 CUDA check failed inside the container.
   exit /b 1
