@@ -15,6 +15,11 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: "${NVIDIA_DRIVER_CAPABILITIES:-compute,utility}"
     volumes:
       - asr-model-cache:/models
+    gpus:
+      - driver: nvidia
+        device_ids:
+          - "${NVIDIA_VISIBLE_DEVICES:-0}"
+        capabilities: [gpu]
     deploy:
       resources:
         reservations:

@@ -173,6 +173,8 @@ On Windows you can run the bundled diagnostic:
 scripts\check_docker_gpu.cmd
 ```
 
+This also runs NVIDIA's standalone CUDA `nbody` sample. If that sample fails, the problem is Docker/WSL/NVIDIA runtime rather than this ASR service or CTranslate2.
+
 For a detailed model-load report inside Docker:
 
 ```bash
