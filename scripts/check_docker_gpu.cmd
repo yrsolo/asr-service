@@ -28,6 +28,14 @@ if errorlevel 1 (
 )
 
 echo.
+echo [local-asr-service] CUDA Driver API inside the container:
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/check_cuda_driver.py
+if errorlevel 1 (
+  echo [local-asr-service] CUDA Driver API check failed inside the container.
+  exit /b 1
+)
+
+echo.
 echo [local-asr-service] CTranslate2 compute types inside the container:
 docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/check_gpu_compute_types.py --device cuda
 if errorlevel 1 (

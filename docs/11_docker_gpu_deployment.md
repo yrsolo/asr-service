@@ -175,6 +175,14 @@ scripts\check_docker_gpu.cmd
 
 This also runs NVIDIA's standalone CUDA `nbody` sample. If that sample fails, the problem is Docker/WSL/NVIDIA runtime rather than this ASR service or CTranslate2.
 
+To inspect the CUDA Driver API directly:
+
+```bash
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/check_cuda_driver.py
+```
+
+If this reports `cuDeviceGetCount.count = 0`, Docker has NVML/`nvidia-smi` access but no CUDA compute devices.
+
 For a detailed model-load report inside Docker:
 
 ```bash
