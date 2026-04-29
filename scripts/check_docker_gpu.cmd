@@ -21,7 +21,7 @@ if errorlevel 1 (
 
 echo.
 echo [local-asr-service] CTranslate2 compute types inside the container:
-docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/check_gpu_compute_types.py --device cuda
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/check_gpu_compute_types.py --device cuda
 if errorlevel 1 (
   echo [local-asr-service] CTranslate2 CUDA check failed inside the container.
   exit /b 1
@@ -29,7 +29,7 @@ if errorlevel 1 (
 
 echo.
 echo [local-asr-service] faster-whisper model load diagnostic:
-docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/debug_model_load.py --skip-transcribe
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/debug_model_load.py --skip-transcribe
 if errorlevel 1 (
   echo [local-asr-service] Model load diagnostic failed inside the container.
   exit /b 1

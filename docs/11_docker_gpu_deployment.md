@@ -16,9 +16,7 @@ nvidia-smi
 docker run --rm --gpus all nvidia/cuda:12.3.2-base-ubuntu22.04 nvidia-smi
 ```
 
-`faster-whisper` uses CTranslate2. This repository's GPU Dockerfile is tuned for GTX 1080 Ti / Pascal cards and uses a legacy-friendly CUDA11/cuDNN8/CTranslate2 stack. This avoids early CUDA initialization failures that can appear with newer CUDA12/cuDNN9 builds on Pascal.
-
-The GPU image pins `python:3.11-slim-bookworm`. Do not casually change it to the floating `python:3.11-slim`: newer Debian/glibc combinations can break older CTranslate2 wheels with `cannot enable executable stack` during import.
+`faster-whisper` uses CTranslate2. This repository's GPU Dockerfile is tuned for GTX 1080 Ti / Pascal cards and uses the official `nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04` base image plus `ctranslate2==3.24.0`. This avoids early CUDA initialization failures that can appear with newer CUDA12/cuDNN9 builds on Pascal.
 
 ## Files
 
@@ -134,13 +132,13 @@ HF_HOME=/models/hf
 Prefetch all configured downloadable models:
 
 ```bash
-docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/download_models.py
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/download_models.py
 ```
 
 Prefetch selected models:
 
 ```bash
-docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/download_models.py --models fw-small-int8,fw-medium-int8,fw-large-v3-turbo-int8
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/download_models.py --models fw-small-int8,fw-medium-int8,fw-large-v3-turbo-int8
 ```
 
 After this, normal service startup reuses the cached models.
@@ -166,7 +164,7 @@ LOCAL_ASR_DEFAULT_MODEL=fw-large-v3-turbo-int8-lowmem
 Check what CTranslate2 supports inside the container:
 
 ```bash
-docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/check_gpu_compute_types.py --device cuda --device-index 0
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/check_gpu_compute_types.py --device cuda
 ```
 
 On Windows you can run the bundled diagnostic:
@@ -178,13 +176,13 @@ scripts\check_docker_gpu.cmd
 For a detailed model-load report inside Docker:
 
 ```bash
-docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/debug_model_load.py --model fw-medium-int8 --skip-transcribe
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/debug_model_load.py --model fw-medium-int8 --skip-transcribe
 ```
 
 To test transcription and compare VRAM before/after:
 
 ```bash
-docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/debug_model_load.py --model fw-medium-int8
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/debug_model_load.py --model fw-medium-int8
 ```
 
 If `nvidia-smi` does not show memory movement but CTranslate2 reports `CUDA out of memory`, treat it as an early CUDA/CTranslate2 allocation failure rather than a real model-size OOM. Rebuild the image after pulling the latest Dockerfile:

@@ -24,7 +24,7 @@ services:
                 - "${NVIDIA_VISIBLE_DEVICES:-0}"
               capabilities: [gpu]
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/health', timeout=5)"]
+      test: ["CMD", "python3.11", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/health', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 5
