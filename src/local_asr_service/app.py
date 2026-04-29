@@ -33,9 +33,13 @@ def _is_gpu_available() -> bool:
         import ctranslate2
 
         get_count = getattr(ctranslate2, "get_cuda_device_count", None)
-        if get_count is None:
-            return False
-        return bool(get_count())
+        if get_count is not None and get_count():
+            return True
+
+        settings = get_settings()
+        device_index = settings.cuda_device_index or 0
+        supported = ctranslate2.get_supported_compute_types("cuda", device_index=device_index)
+        return bool(supported)
     except Exception:
         return False
 

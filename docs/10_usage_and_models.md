@@ -204,6 +204,18 @@ Check supported compute types:
 python scripts/check_gpu_compute_types.py --device cuda --device-index 0
 ```
 
+Detailed model-load diagnostic:
+
+```powershell
+python scripts/debug_model_load.py --model fw-medium-int8 --skip-transcribe
+```
+
+Inside Docker:
+
+```powershell
+scripts\check_docker_gpu.cmd
+```
+
 References:
 
 - `faster-whisper`: https://github.com/SYSTRAN/faster-whisper

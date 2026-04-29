@@ -178,6 +178,20 @@ On Windows you can run the bundled diagnostic:
 scripts\check_docker_gpu.cmd
 ```
 
+For a detailed model-load report inside Docker:
+
+```bash
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/debug_model_load.py --model fw-medium-int8 --skip-transcribe
+```
+
+To test transcription and compare VRAM before/after:
+
+```bash
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/debug_model_load.py --model fw-medium-int8
+```
+
+If `nvidia-smi` does not show memory movement but CTranslate2 reports `CUDA out of memory`, treat it as an early CUDA/CTranslate2 allocation failure. Check that the same `NVIDIA_VISIBLE_DEVICES`, `LOCAL_ASR_CUDA_DEVICE_INDEX`, driver, and CUDA runtime are used in Docker and in the native Python run.
+
 ## Useful Commands
 
 Logs:

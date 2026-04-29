@@ -27,4 +27,12 @@ if errorlevel 1 (
   exit /b 1
 )
 
+echo.
+echo [local-asr-service] faster-whisper model load diagnostic:
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/debug_model_load.py --skip-transcribe
+if errorlevel 1 (
+  echo [local-asr-service] Model load diagnostic failed inside the container.
+  exit /b 1
+)
+
 endlocal
