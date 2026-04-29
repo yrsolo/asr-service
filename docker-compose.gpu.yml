@@ -15,7 +15,6 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: "${NVIDIA_DRIVER_CAPABILITIES:-compute,utility}"
     volumes:
       - asr-model-cache:/models
-    runtime: nvidia
     deploy:
       resources:
         reservations:

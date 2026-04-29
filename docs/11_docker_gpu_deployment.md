@@ -18,6 +18,8 @@ docker run --rm --gpus all nvidia/cuda:12.3.2-base-ubuntu22.04 nvidia-smi
 
 `faster-whisper` uses CTranslate2. This repository's GPU Dockerfile is tuned for GTX 1080 Ti / Pascal cards and uses a legacy-friendly CUDA11/cuDNN8/CTranslate2 stack. This avoids early CUDA initialization failures that can appear with newer CUDA12/cuDNN9 builds on Pascal.
 
+The GPU image pins `python:3.11-slim-bookworm`. Do not casually change it to the floating `python:3.11-slim`: newer Debian/glibc combinations can break older CTranslate2 wheels with `cannot enable executable stack` during import.
+
 ## Files
 
 - `Dockerfile`: small CPU/dev image.
@@ -191,6 +193,21 @@ If `nvidia-smi` does not show memory movement but CTranslate2 reports `CUDA out 
 docker compose -f docker-compose.gpu.yml build --no-cache
 docker compose -f docker-compose.gpu.yml up -d
 ```
+
+If the container still shows all GPUs after setting `NVIDIA_VISIBLE_DEVICES`, inspect the resolved compose file:
+
+```bash
+docker compose -f docker-compose.gpu.yml config
+```
+
+Look for:
+
+```yaml
+device_ids:
+  - "2"
+```
+
+or the selected GPU UUID.
 
 ## Useful Commands
 
