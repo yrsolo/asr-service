@@ -16,7 +16,7 @@ nvidia-smi
 docker run --rm --gpus all nvidia/cuda:12.3.2-base-ubuntu22.04 nvidia-smi
 ```
 
-`faster-whisper` uses CTranslate2. Current GPU builds require CUDA 12 cuBLAS and CUDA 12 cuDNN 9 libraries. The GPU Dockerfile installs those Python wheels and sets `LD_LIBRARY_PATH` inside the container.
+`faster-whisper` uses CTranslate2. This repository's GPU Dockerfile is tuned for GTX 1080 Ti / Pascal cards and uses a legacy-friendly CUDA11/cuDNN8/CTranslate2 stack. This avoids early CUDA initialization failures that can appear with newer CUDA12/cuDNN9 builds on Pascal.
 
 ## Files
 
@@ -117,12 +117,7 @@ LOCAL_ASR_CUDA_DEVICE_INDEX=0
 
 Advanced mode, exposing multiple GPUs:
 
-```dotenv
-NVIDIA_VISIBLE_DEVICES=0,1
-LOCAL_ASR_CUDA_DEVICE_INDEX=1
-```
-
-Here both host GPUs are visible inside the container, and faster-whisper uses the second visible CUDA device.
+The bundled `docker-compose.gpu.yml` is intentionally configured for one GPU per service container. To run several GPUs, start separate service copies with different `NVIDIA_VISIBLE_DEVICES` values or edit `device_ids` in the compose file.
 
 You can also set `device_index` per model profile in `config/models.example.yaml`, but the environment variable `LOCAL_ASR_CUDA_DEVICE_INDEX` has priority.
 
@@ -190,7 +185,12 @@ To test transcription and compare VRAM before/after:
 docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/debug_model_load.py --model fw-medium-int8
 ```
 
-If `nvidia-smi` does not show memory movement but CTranslate2 reports `CUDA out of memory`, treat it as an early CUDA/CTranslate2 allocation failure. Check that the same `NVIDIA_VISIBLE_DEVICES`, `LOCAL_ASR_CUDA_DEVICE_INDEX`, driver, and CUDA runtime are used in Docker and in the native Python run.
+If `nvidia-smi` does not show memory movement but CTranslate2 reports `CUDA out of memory`, treat it as an early CUDA/CTranslate2 allocation failure rather than a real model-size OOM. Rebuild the image after pulling the latest Dockerfile:
+
+```bash
+docker compose -f docker-compose.gpu.yml build --no-cache
+docker compose -f docker-compose.gpu.yml up -d
+```
 
 ## Useful Commands
 

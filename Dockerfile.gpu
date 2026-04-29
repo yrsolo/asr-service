@@ -3,7 +3,7 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV HF_HOME=/models/hf
-ENV LD_LIBRARY_PATH=/usr/local/lib/python3.11/site-packages/nvidia/cublas/lib:/usr/local/lib/python3.11/site-packages/nvidia/cudnn/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+ENV LD_LIBRARY_PATH=/usr/local/lib/python3.11/site-packages/nvidia/cublas/lib:/usr/local/lib/python3.11/site-packages/nvidia/cudnn/lib:/usr/local/lib/python3.11/site-packages/nvidia/cuda_runtime/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
 
 WORKDIR /app
 
@@ -20,7 +20,11 @@ COPY scripts /app/scripts
 
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -e . \
-    && pip install --no-cache-dir "nvidia-cublas-cu12" "nvidia-cudnn-cu12==9.*"
+    && pip install --no-cache-dir --force-reinstall \
+        "ctranslate2==3.24.0" \
+        "nvidia-cublas-cu11" \
+        "nvidia-cudnn-cu11==8.*" \
+        "nvidia-cuda-runtime-cu11"
 
 EXPOSE 8765
 

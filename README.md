@@ -78,6 +78,8 @@ NVIDIA_VISIBLE_DEVICES=1
 LOCAL_ASR_CUDA_DEVICE_INDEX=0
 ```
 
+On GTX 1080 Ti / Pascal, the Docker image uses a legacy-friendly CUDA11/cuDNN8/CTranslate2 stack. This is intentional; newer CUDA12/cuDNN9 CTranslate2 builds can fail before model loading on Pascal cards.
+
 5. Start the container.
 
 Windows:
