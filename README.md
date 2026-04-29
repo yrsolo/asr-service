@@ -54,6 +54,7 @@ Useful model ids:
 - `fw-small-int8`: fast CUDA baseline.
 - `fw-medium-int8`: recommended first real GPU model for GTX 1080 Ti.
 - `fw-large-v3-turbo-int8`: best quality candidate for GTX 1080 Ti, benchmark before live use.
+- `fw-large-v3-turbo-int8-lowmem`: lower-memory large model test for GTX 1080 Ti Docker.
 - `fw-medium-int8-fp16`: newer GPUs with efficient FP16/Tensor Core support.
 - `fw-large-v3-turbo-int8-fp16`: newer GPUs with efficient FP16/Tensor Core support.
 

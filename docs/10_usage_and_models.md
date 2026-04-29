@@ -67,6 +67,7 @@ Profiles live in `config/models.example.yaml`.
 | `fw-small-int8` | Fast GPU baseline | Good first CUDA check. |
 | `fw-medium-int8` | Recommended GTX 1080 Ti profile | Better Russian quality while still realistic for 11 GB VRAM. |
 | `fw-large-v3-turbo-int8` | Best GTX 1080 Ti quality candidate | Benchmark latency before making it default. |
+| `fw-large-v3-turbo-int8-lowmem` | Lower-memory large model test | Use in Docker if regular large profile runs out of VRAM. |
 | `fw-medium-int8-fp16` | Newer GPU profile | Requires efficient FP16/Tensor Core support. |
 | `fw-large-v3-turbo-int8-fp16` | Newer GPU quality candidate | Requires efficient FP16/Tensor Core support. |
 
@@ -76,7 +77,7 @@ For a GTX 1080 Ti 11 GB, start with:
 LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8
 ```
 
-Then benchmark `fw-small-int8`, `fw-medium-int8`, and `fw-large-v3-turbo-int8` with the same meeting samples.
+Then benchmark `fw-small-int8`, `fw-medium-int8`, `fw-large-v3-turbo-int8-lowmem`, and `fw-large-v3-turbo-int8` with the same meeting samples.
 
 ## Download Models
 
@@ -184,6 +185,18 @@ Track:
 Modern `faster-whisper` uses CTranslate2. Current CTranslate2 GPU builds are oriented around CUDA 12; older CUDA setups may require pinning CTranslate2 to an older compatible version. Confirm the target machine's NVIDIA driver, CUDA runtime, and cuDNN before treating a CUDA profile as production-ready.
 
 GTX 1080 Ti / Pascal cards should use `int8` profiles. If you see `Requested int8_float16 compute type...`, select `fw-medium-int8` or `fw-large-v3-turbo-int8`.
+
+If Docker reports CUDA out of memory on `fw-large-v3-turbo-int8`, first switch to:
+
+```dotenv
+LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8
+```
+
+Then try the lower-memory large profile:
+
+```dotenv
+LOCAL_ASR_DEFAULT_MODEL=fw-large-v3-turbo-int8-lowmem
+```
 
 Check supported compute types:
 

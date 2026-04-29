@@ -84,3 +84,15 @@ models:
     beam_size: 5
     vad_filter: true
     download: true
+
+  - id: fw-large-v3-turbo-int8-lowmem
+    backend: faster_whisper
+    model_name: large-v3-turbo
+    device: cuda
+    device_index:
+    compute_type: int8
+    languages: [ru, en, auto]
+    description: Lower-memory large-v3-turbo profile for GTX 1080 Ti Docker tests.
+    beam_size: 1
+    vad_filter: true
+    download: true

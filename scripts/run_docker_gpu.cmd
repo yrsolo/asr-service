@@ -17,6 +17,9 @@ if not exist ".env" (
 echo [local-asr-service] GPUs visible on this host:
 nvidia-smi --query-gpu=index,uuid,name,memory.total --format=csv
 echo.
+echo [local-asr-service] For deeper Docker GPU diagnostics, run:
+echo   scripts\check_docker_gpu.cmd
+echo.
 
 echo [local-asr-service] Building and starting Docker GPU container...
 docker compose -f docker-compose.gpu.yml up --build -d

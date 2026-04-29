@@ -79,6 +79,16 @@ models:
     beam_size: 5
     vad_filter: true
     download: true
+
+  - id: fw-large-v3-turbo-int8-lowmem
+    backend: faster_whisper
+    model_name: large-v3-turbo
+    device: cuda
+    device_index:
+    compute_type: int8
+    beam_size: 1
+    vad_filter: true
+    download: true
 ```
 
 ## Recommended Test Order
@@ -87,8 +97,9 @@ models:
 2. `fw-tiny-cpu`: validate real audio decoding on any machine.
 3. `fw-small-int8`: first CUDA smoke test.
 4. `fw-medium-int8`: first serious Russian/English candidate for GTX 1080 Ti / Pascal.
-5. `fw-large-v3-turbo-int8`: best quality candidate for GTX 1080 Ti / Pascal; benchmark latency.
-6. `fw-medium-int8-fp16` or `fw-large-v3-turbo-int8-fp16`: use on newer GPUs with efficient FP16/Tensor Core support.
+5. `fw-large-v3-turbo-int8-lowmem`: lower-memory large model test for GTX 1080 Ti Docker.
+6. `fw-large-v3-turbo-int8`: best quality candidate for GTX 1080 Ti / Pascal; benchmark latency.
+7. `fw-medium-int8-fp16` or `fw-large-v3-turbo-int8-fp16`: use on newer GPUs with efficient FP16/Tensor Core support.
 
 ## What to Measure
 

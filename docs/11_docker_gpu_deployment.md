@@ -154,10 +154,28 @@ For GTX 1080 Ti / Pascal cards, use `*-int8` profiles. If `*-int8-fp16` reports 
 LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8
 ```
 
+If Docker reports CUDA out of memory on the regular large profile, use:
+
+```dotenv
+LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8
+```
+
+or test the lower-memory large profile:
+
+```dotenv
+LOCAL_ASR_DEFAULT_MODEL=fw-large-v3-turbo-int8-lowmem
+```
+
 Check what CTranslate2 supports inside the container:
 
 ```bash
 docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/check_gpu_compute_types.py --device cuda --device-index 0
+```
+
+On Windows you can run the bundled diagnostic:
+
+```cmd
+scripts\check_docker_gpu.cmd
 ```
 
 ## Useful Commands
