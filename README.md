@@ -45,15 +45,17 @@ copy .env.example .env
 Pick the model:
 
 ```dotenv
-LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8-fp16
+LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8
 ```
 
 Useful model ids:
 
 - `mock`: fake transcript for API/UI smoke test.
 - `fw-small-int8`: fast CUDA baseline.
-- `fw-medium-int8-fp16`: recommended first real GPU model.
-- `fw-large-v3-turbo-int8-fp16`: best quality candidate, benchmark before live use.
+- `fw-medium-int8`: recommended first real GPU model for GTX 1080 Ti.
+- `fw-large-v3-turbo-int8`: best quality candidate for GTX 1080 Ti, benchmark before live use.
+- `fw-medium-int8-fp16`: newer GPUs with efficient FP16/Tensor Core support.
+- `fw-large-v3-turbo-int8-fp16`: newer GPUs with efficient FP16/Tensor Core support.
 
 Pick the GPU:
 

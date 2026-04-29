@@ -42,7 +42,7 @@ Edit `.env`:
 LOCAL_ASR_HOST=127.0.0.1
 LOCAL_ASR_PORT=8765
 LOCAL_ASR_API_KEY=change-me
-LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8-fp16
+LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8
 LOCAL_ASR_MODELS_CONFIG=config/models.example.yaml
 
 NVIDIA_VISIBLE_DEVICES=0
@@ -143,10 +143,22 @@ docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scrip
 Prefetch selected models:
 
 ```bash
-docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/download_models.py --models fw-small-int8,fw-medium-int8-fp16
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/download_models.py --models fw-small-int8,fw-medium-int8,fw-large-v3-turbo-int8
 ```
 
 After this, normal service startup reuses the cached models.
+
+For GTX 1080 Ti / Pascal cards, use `*-int8` profiles. If `*-int8-fp16` reports that `int8_float16` is not supported, switch to:
+
+```dotenv
+LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8
+```
+
+Check what CTranslate2 supports inside the container:
+
+```bash
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python scripts/check_gpu_compute_types.py --device cuda --device-index 0
+```
 
 ## Useful Commands
 

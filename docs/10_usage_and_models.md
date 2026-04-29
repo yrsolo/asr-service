@@ -65,16 +65,18 @@ Profiles live in `config/models.example.yaml`.
 | `mock` | API and UI development | No model download; deterministic fake transcript. |
 | `fw-tiny-cpu` | CPU smoke test | Useful before CUDA is configured. Low quality. |
 | `fw-small-int8` | Fast GPU baseline | Good first CUDA check. |
-| `fw-medium-int8-fp16` | Recommended first serious profile | Better Russian quality while still realistic for 11 GB VRAM. |
-| `fw-large-v3-turbo-int8-fp16` | Quality/speed candidate | Benchmark on target hardware before making it default. |
+| `fw-medium-int8` | Recommended GTX 1080 Ti profile | Better Russian quality while still realistic for 11 GB VRAM. |
+| `fw-large-v3-turbo-int8` | Best GTX 1080 Ti quality candidate | Benchmark latency before making it default. |
+| `fw-medium-int8-fp16` | Newer GPU profile | Requires efficient FP16/Tensor Core support. |
+| `fw-large-v3-turbo-int8-fp16` | Newer GPU quality candidate | Requires efficient FP16/Tensor Core support. |
 
 For a GTX 1080 Ti 11 GB, start with:
 
 ```dotenv
-LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8-fp16
+LOCAL_ASR_DEFAULT_MODEL=fw-medium-int8
 ```
 
-Then benchmark `fw-small-int8`, `fw-medium-int8-fp16`, and `fw-large-v3-turbo-int8-fp16` with the same meeting samples.
+Then benchmark `fw-small-int8`, `fw-medium-int8`, and `fw-large-v3-turbo-int8` with the same meeting samples.
 
 ## Download Models
 
@@ -97,6 +99,13 @@ Download selected profiles:
 ```powershell
 $env:PYTHONPATH="src"
 python scripts/download_models.py --models fw-small-int8,fw-medium-int8-fp16
+```
+
+For GTX 1080 Ti:
+
+```powershell
+$env:PYTHONPATH="src"
+python scripts/download_models.py --models fw-small-int8,fw-medium-int8,fw-large-v3-turbo-int8
 ```
 
 Use a dedicated cache/output directory:
@@ -154,6 +163,13 @@ $env:PYTHONPATH="src"
 python scripts/benchmark_models.py samples\meeting_ru.wav --models fw-small-int8,fw-medium-int8-fp16,fw-large-v3-turbo-int8-fp16 --language ru
 ```
 
+For GTX 1080 Ti:
+
+```powershell
+$env:PYTHONPATH="src"
+python scripts/benchmark_models.py samples\meeting_ru.wav --models fw-small-int8,fw-medium-int8,fw-large-v3-turbo-int8 --language ru
+```
+
 Track:
 
 - real-time factor (`rtf`);
@@ -166,6 +182,14 @@ Track:
 ## CUDA Notes
 
 Modern `faster-whisper` uses CTranslate2. Current CTranslate2 GPU builds are oriented around CUDA 12; older CUDA setups may require pinning CTranslate2 to an older compatible version. Confirm the target machine's NVIDIA driver, CUDA runtime, and cuDNN before treating a CUDA profile as production-ready.
+
+GTX 1080 Ti / Pascal cards should use `int8` profiles. If you see `Requested int8_float16 compute type...`, select `fw-medium-int8` or `fw-large-v3-turbo-int8`.
+
+Check supported compute types:
+
+```powershell
+python scripts/check_gpu_compute_types.py --device cuda --device-index 0
+```
 
 References:
 

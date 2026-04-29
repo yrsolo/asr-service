@@ -44,7 +44,19 @@ models:
     device_index:
     compute_type: int8_float16
     languages: [ru, en, auto]
-    description: Recommended first serious test on GTX 1080 Ti.
+    description: Faster candidate for newer CUDA GPUs with efficient FP16/Tensor Core support.
+    beam_size: 5
+    vad_filter: true
+    download: true
+
+  - id: fw-medium-int8
+    backend: faster_whisper
+    model_name: medium
+    device: cuda
+    device_index:
+    compute_type: int8
+    languages: [ru, en, auto]
+    description: Recommended first serious GPU profile for GTX 1080 Ti / Pascal cards.
     beam_size: 5
     vad_filter: true
     download: true
@@ -57,6 +69,18 @@ models:
     compute_type: int8_float16
     languages: [ru, en, auto]
     description: Quality/speed candidate; benchmark on target hardware.
+    beam_size: 5
+    vad_filter: true
+    download: true
+
+  - id: fw-large-v3-turbo-int8
+    backend: faster_whisper
+    model_name: large-v3-turbo
+    device: cuda
+    device_index:
+    compute_type: int8
+    languages: [ru, en, auto]
+    description: Best quality candidate for GTX 1080 Ti / Pascal cards; benchmark latency.
     beam_size: 5
     vad_filter: true
     download: true

@@ -50,12 +50,32 @@ models:
     vad_filter: true
     download: true
 
+  - id: fw-medium-int8
+    backend: faster_whisper
+    model_name: medium
+    device: cuda
+    device_index:
+    compute_type: int8
+    beam_size: 5
+    vad_filter: true
+    download: true
+
   - id: fw-large-v3-turbo-int8-fp16
     backend: faster_whisper
     model_name: large-v3-turbo
     device: cuda
     device_index:
     compute_type: int8_float16
+    beam_size: 5
+    vad_filter: true
+    download: true
+
+  - id: fw-large-v3-turbo-int8
+    backend: faster_whisper
+    model_name: large-v3-turbo
+    device: cuda
+    device_index:
+    compute_type: int8
     beam_size: 5
     vad_filter: true
     download: true
@@ -66,8 +86,9 @@ models:
 1. `mock`: validate API, UI, auth, and client integration without ASR cost.
 2. `fw-tiny-cpu`: validate real audio decoding on any machine.
 3. `fw-small-int8`: first CUDA smoke test.
-4. `fw-medium-int8-fp16`: first serious Russian/English candidate for GTX 1080 Ti.
-5. `fw-large-v3-turbo-int8-fp16`: quality/speed candidate; use only after benchmarking on the target GPU.
+4. `fw-medium-int8`: first serious Russian/English candidate for GTX 1080 Ti / Pascal.
+5. `fw-large-v3-turbo-int8`: best quality candidate for GTX 1080 Ti / Pascal; benchmark latency.
+6. `fw-medium-int8-fp16` or `fw-large-v3-turbo-int8-fp16`: use on newer GPUs with efficient FP16/Tensor Core support.
 
 ## What to Measure
 
@@ -100,6 +121,18 @@ Interpretation:
 GTX 1080 Ti has 11 GB VRAM but no tensor cores. Benchmark exact profiles on target hardware. Do not assume the largest model is best for live latency.
 
 Modern `faster-whisper`/CTranslate2 GPU builds are CUDA-version sensitive. If CUDA loading fails, verify NVIDIA driver, CUDA runtime, cuDNN, and CTranslate2 version compatibility before changing API code.
+
+If GTX 1080 Ti reports an error like:
+
+```text
+Requested int8_float16 compute type, but the target device or backend do not support efficient int8_float16 computation.
+```
+
+switch from `*-int8-fp16` to the matching `*-int8` profile. You can inspect runtime support with:
+
+```powershell
+python scripts/check_gpu_compute_types.py --device cuda --device-index 0
+```
 
 ## Multi-GPU Selection
 
