@@ -7,8 +7,10 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 copy .env.example .env
-python -m local_asr_service.main
+.\run.cmd
 ```
+
+`run.cmd` opens a separate visible console window named `Local ASR Service`. Stop it by closing that console window or by pressing `Stop service` in the built-in web UI.
 
 ## Linux
 

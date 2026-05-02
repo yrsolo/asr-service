@@ -121,12 +121,15 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 copy .env.example .env
-python -m local_asr_service.main
+.\run.cmd
 ```
+
+On Windows, `run.cmd` opens the service in a separate visible console window. Close that console or use the web UI `Stop service` button to stop the process.
 
 ## Endpoints
 
 - `GET /health`
+- `POST /shutdown`
 - `GET /v1/models`
 - `POST /v1/transcribe/file`
 - `POST /v1/transcribe/chunk`

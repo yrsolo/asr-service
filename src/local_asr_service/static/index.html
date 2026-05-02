@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,7 +15,9 @@
       --accent: #156c5a;
       --accent-strong: #0f5a4b;
       --danger: #b42318;
+      --draft: #1d4ed8;
       --soft: #edf7f4;
+      --raw: #6b7280;
     }
 
     * { box-sizing: border-box; }
@@ -28,7 +30,7 @@
     }
 
     main {
-      width: min(1120px, calc(100% - 32px));
+      width: min(1180px, calc(100% - 32px));
       margin: 0 auto;
       padding: 32px 0 48px;
     }
@@ -48,16 +50,27 @@
       letter-spacing: 0;
     }
 
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
     .subtitle {
       margin: 10px 0 0;
-      max-width: 720px;
+      max-width: 760px;
       color: var(--muted);
       font-size: 16px;
       line-height: 1.55;
     }
 
+    .status-stack {
+      min-width: 240px;
+      display: grid;
+      gap: 10px;
+    }
+
     .status {
-      min-width: 210px;
       border: 1px solid var(--line);
       background: var(--panel);
       border-radius: 8px;
@@ -73,9 +86,34 @@
       font-size: 15px;
     }
 
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab-button {
+      width: auto;
+      min-height: 40px;
+      border: 1px solid transparent;
+      border-bottom: 0;
+      border-radius: 8px 8px 0 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 0 14px;
+      font-weight: 750;
+    }
+
+    .tab-button.active {
+      border-color: var(--line);
+      background: var(--panel);
+      color: var(--accent-strong);
+    }
+
     .layout {
       display: grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 390px 1fr;
       gap: 18px;
       align-items: start;
     }
@@ -88,6 +126,8 @@
       box-shadow: 0 12px 30px rgba(23, 32, 51, 0.06);
     }
 
+    .tab-panel[hidden] { display: none; }
+
     label {
       display: block;
       margin: 0 0 6px;
@@ -96,7 +136,7 @@
       font-weight: 650;
     }
 
-    select, input[type="text"], input[type="file"] {
+    select, input[type="text"], input[type="file"], input[type="number"] {
       width: 100%;
       min-height: 42px;
       border: 1px solid var(--line);
@@ -107,12 +147,34 @@
       font: inherit;
     }
 
+    audio {
+      width: 100%;
+      min-height: 42px;
+      margin-top: 6px;
+    }
+
     .field { margin-bottom: 14px; }
 
     .row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .grid.compact .field {
+      margin-bottom: 0;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
 
     button {
@@ -129,6 +191,11 @@
 
     button:hover { background: var(--accent-strong); }
     button:disabled { opacity: 0.55; cursor: wait; }
+    button.small { min-height: 38px; font-size: 14px; }
+    button.secondary { background: #344054; }
+    button.secondary:hover { background: #1f2937; }
+    button.danger { background: var(--danger); }
+    button.danger:hover { background: #8f1d14; }
 
     .result-head {
       display: flex;
@@ -136,12 +203,6 @@
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 12px;
-    }
-
-    .result-head h2 {
-      margin: 0;
-      font-size: 18px;
-      letter-spacing: 0;
     }
 
     .pill {
@@ -155,7 +216,7 @@
     }
 
     pre {
-      min-height: 260px;
+      min-height: 240px;
       margin: 0;
       overflow: auto;
       border: 1px solid var(--line);
@@ -169,6 +230,7 @@
     }
 
     .transcript {
+      min-height: 78px;
       margin: 0 0 14px;
       border-left: 4px solid var(--accent);
       padding: 12px 14px;
@@ -177,15 +239,293 @@
       line-height: 1.6;
     }
 
+    .live-text {
+      min-height: 126px;
+      margin: 0 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      line-height: 1.7;
+      background: #fbfdfc;
+    }
+
+    .live-buckets {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .live-bucket {
+      min-height: 86px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: #fbfdfc;
+      line-height: 1.7;
+    }
+
+    .live-bucket h3 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0;
+    }
+
+    .live-bucket.final-lane { border-left: 4px solid var(--accent); }
+    .live-bucket.draft-lane { border-left: 4px solid var(--draft); }
+    .live-bucket.raw-lane { border-left: 4px solid var(--raw); }
+    .live-bucket-text { min-height: 28px; }
+
+    .draft { color: var(--draft); }
+    .final { color: var(--ink); font-weight: 650; }
+    .raw {
+      color: var(--raw);
+      font-style: italic;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 2px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .queue-meter {
+      height: 10px;
+      margin: 0 0 14px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #eef2f7;
+    }
+
+    .queue-meter span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent);
+      transition: width 160ms ease, background 160ms ease;
+    }
+
+    .mode-settings {
+      margin: 14px 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfc;
+    }
+
+    .mode-settings[hidden] { display: none; }
+
+    .diagnostic-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .diagnostic-card {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .diagnostic-card strong {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .phrase-meter {
+      height: 10px;
+      margin: 0 0 14px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #eef2f7;
+    }
+
+    .phrase-meter span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--draft);
+      transition: width 160ms ease, background 160ms ease;
+    }
+
+    .history {
+      min-height: 76px;
+      max-height: 132px;
+      margin: 0 0 14px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .history div + div { margin-top: 5px; }
+
+    details.debug-panel {
+      margin: 0 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    details.debug-panel summary {
+      cursor: pointer;
+      padding: 10px 12px;
+      color: var(--accent-strong);
+      font-weight: 750;
+    }
+
+    .diagram-layout {
+      display: block;
+    }
+
+    .diagram-layout .panel {
+      margin-bottom: 16px;
+    }
+
+    .timeline {
+      position: relative;
+      min-height: 280px;
+      margin: 0;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfc;
+    }
+
+    .timeline-inner {
+      position: relative;
+      min-width: 100%;
+      height: 280px;
+    }
+
+    .timeline-item {
+      position: absolute;
+      height: 18px;
+      border-radius: 4px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      line-height: 18px;
+      overflow: hidden;
+      padding: 0 4px;
+      white-space: nowrap;
+    }
+
+    .timeline-item.silence { background: var(--raw); }
+    .timeline-item.window { height: 24px; background: rgba(29, 78, 216, 0.22); color: var(--ink); border: 1px solid rgba(29, 78, 216, 0.55); }
+    .timeline-item.effective { height: 24px; background: rgba(21, 108, 90, 0.24); color: var(--ink); border: 1px solid rgba(21, 108, 90, 0.55); }
+    .timeline-item.queue { height: 16px; background: rgba(180, 35, 24, 0.75); }
+    .timeline-item.dropped { background: var(--danger); }
+    .timeline-item.frame { background: #94a3b8; color: #101828; }
+    .timeline-item.job { background: var(--draft); }
+    .timeline-item.vad-silence { background: #cbd5e1; color: #101828; }
+    .timeline-item.vad-candidate { background: #f59e0b; color: #101828; }
+    .timeline-item.vad-speech { background: var(--accent); }
+    .timeline-item.vad-trailing { background: #f97316; color: #101828; }
+    .timeline-item.force { background: #7c3aed; }
+    .timeline-item.final-line {
+      height: 2px;
+      padding: 0;
+      background: var(--ink);
+      color: transparent;
+    }
+
+    .timeline-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-chip::before {
+      content: "";
+      width: 16px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+
+    .legend-chip.frame::before { background: #94a3b8; }
+    .legend-chip.job::before { background: var(--draft); }
+    .legend-chip.window::before { background: rgba(29, 78, 216, 0.45); }
+    .legend-chip.effective::before { background: rgba(21, 108, 90, 0.55); }
+    .legend-chip.silence::before { background: var(--raw); }
+    .legend-chip.queue::before { background: var(--danger); }
+    .legend-chip.vad-speech::before { background: var(--accent); }
+    .legend-chip.vad-candidate::before { background: #f59e0b; }
+    .legend-chip.vad-trailing::before { background: #f97316; }
+    .legend-chip.force::before { background: #7c3aed; }
+
+    .seq-table {
+      width: calc(100% - 24px);
+      margin: 0 12px 12px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .seq-table th,
+    .seq-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .seq-text {
+      max-width: 380px;
+      color: var(--muted);
+    }
+
     .error {
       color: var(--danger);
       font-weight: 700;
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 900px) {
       header, .layout { display: block; }
-      .status { margin-top: 16px; }
+      .status-stack { margin-top: 16px; }
       .panel { margin-bottom: 16px; }
+      .stats { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -194,61 +534,344 @@
     <header>
       <div>
         <h1>Local ASR Service</h1>
-        <p class="subtitle">Тестовая панель для проверки локального распознавания: выберите модель, загрузите WAV или MP3 и посмотрите сырой ответ API.</p>
+        <p class="subtitle">Manual test panel for complete file transcription and live WebSocket emulation from WAV/MP3 files.</p>
       </div>
-      <div class="status" id="health">
-        <strong>Статус</strong>
-        Проверяю сервис...
+      <div class="status-stack">
+        <div class="status" id="health">
+          <strong>Status</strong>
+          Checking service...
+        </div>
+        <button id="shutdownService" class="danger small" type="button">Stop service</button>
       </div>
     </header>
 
-    <section class="layout">
-      <form class="panel" id="form">
-        <div class="field">
-          <label for="file">Аудиофайл</label>
-          <input id="file" name="file" type="file" accept=".wav,.mp3,audio/wav,audio/mpeg,audio/mp3" required>
-        </div>
+    <nav class="tabs" aria-label="Test modes">
+      <button class="tab-button active" type="button" data-tab="file">File transcription</button>
+      <button class="tab-button" type="button" data-tab="live">Live file emulation</button>
+      <button class="tab-button" type="button" data-tab="diagram">Live diagram</button>
+    </nav>
 
-        <div class="row">
+    <section class="tab-panel" id="tab-file">
+      <section class="layout">
+        <form class="panel" id="form">
           <div class="field">
-            <label for="model">Модель</label>
-            <select id="model" name="model_id"></select>
+            <label for="file">Audio file</label>
+            <input id="file" name="file" type="file" accept=".wav,.mp3,audio/wav,audio/mpeg,audio/mp3" required>
           </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="model">Model</label>
+              <select id="model" name="model_id"></select>
+            </div>
+            <div class="field">
+              <label for="language">Language</label>
+              <select id="language" name="language">
+                <option value="auto">auto</option>
+                <option value="ru">ru</option>
+                <option value="en">en</option>
+              </select>
+            </div>
+          </div>
+
           <div class="field">
-            <label for="language">Язык</label>
-            <select id="language" name="language">
-              <option value="auto">auto</option>
-              <option value="ru">ru</option>
-              <option value="en">en</option>
+            <label for="source">Source</label>
+            <select id="source" name="source">
+              <option value="unknown">unknown</option>
+              <option value="mic">mic</option>
+              <option value="system">system</option>
+              <option value="mixed">mixed</option>
             </select>
           </div>
-        </div>
 
-        <div class="field">
-          <label for="source">Источник</label>
-          <select id="source" name="source">
-            <option value="unknown">unknown</option>
-            <option value="mic">mic</option>
-            <option value="system">system</option>
-            <option value="mixed">mixed</option>
-          </select>
-        </div>
+          <div class="field">
+            <label for="apiKey">API key</label>
+            <input id="apiKey" type="text" autocomplete="off" placeholder="Leave empty when API key is disabled">
+          </div>
 
-        <div class="field">
-          <label for="apiKey">API key</label>
-          <input id="apiKey" type="text" autocomplete="off" placeholder="Оставьте пустым, если ключ выключен">
-        </div>
+          <button id="submit" type="submit">Transcribe file</button>
+        </form>
 
-        <button id="submit" type="submit">Распознать</button>
-      </form>
+        <section class="panel">
+          <div class="result-head">
+            <h2>Result</h2>
+            <span class="pill" id="meta">waiting for file</span>
+          </div>
+          <div id="transcript" class="transcript">Transcript text will appear here.</div>
+          <pre id="json">{}</pre>
+        </section>
+      </section>
+    </section>
 
-      <section class="panel">
-        <div class="result-head">
-          <h2>Результат</h2>
-          <span class="pill" id="meta">ожидание файла</span>
-        </div>
-        <div id="transcript" class="transcript">Текст появится здесь после распознавания.</div>
-        <pre id="json">{}</pre>
+    <section class="tab-panel" id="tab-live" hidden>
+      <section class="layout">
+        <form class="panel" id="liveForm">
+          <div class="field">
+            <label for="liveFile">Audio file</label>
+            <input id="liveFile" type="file" accept=".wav,.mp3,audio/wav,audio/mpeg,audio/mp3" required>
+            <audio id="liveAudio" controls></audio>
+          </div>
+
+          <div class="field">
+            <label for="liveMode">Live mode</label>
+            <select id="liveMode">
+              <option value="phrase_endpoint">Phrase endpointing emulation</option>
+              <option value="live_revision">Sliding window live_revision</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="liveModel">Model</label>
+              <select id="liveModel"></select>
+            </div>
+            <div class="field">
+              <label for="liveLanguage">Language</label>
+              <select id="liveLanguage">
+                <option value="auto">auto</option>
+                <option value="ru">ru</option>
+                <option value="en">en</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="liveSource">Source</label>
+              <select id="liveSource">
+                <option value="unknown">unknown</option>
+                <option value="mic">mic</option>
+                <option value="system">system</option>
+                <option value="mixed">mixed</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="frameMs">Frame ms</label>
+              <input id="frameMs" type="number" min="20" max="1000" step="10" value="50">
+            </div>
+          </div>
+
+          <div class="field mode-settings" id="revisionSettings">
+            <label for="decodeJobMs">Decode job interval ms</label>
+            <input id="decodeJobMs" type="number" min="250" max="5000" step="250" value="1000">
+            <div class="field">
+              <label for="adaptationMode">Adaptation</label>
+              <select id="adaptationMode">
+                <option value="off">Off / measure only</option>
+                <option value="silence_gate">Silence gate</option>
+                <option value="adaptive_window">Adaptive window</option>
+                <option value="drop_stale_decode">Drop stale decode</option>
+                <option value="combined">Combined</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label for="windowMs">Window ms</label>
+                <input id="windowMs" type="number" min="1000" max="60000" step="500" value="8000">
+              </div>
+              <div class="field">
+                <label for="rawTailMs">Raw tail ms</label>
+                <input id="rawTailMs" type="number" min="250" max="5000" step="250" value="1500">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label for="finalLagMs">Final lag ms</label>
+                <input id="finalLagMs" type="number" min="1000" max="30000" step="500" value="4000">
+              </div>
+              <div class="field">
+                <label for="stableConfirmations">Stable confirmations</label>
+                <input id="stableConfirmations" type="number" min="1" max="5" step="1" value="2">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label for="minWindowMs">Min window ms</label>
+                <input id="minWindowMs" type="number" min="1000" max="60000" step="500" value="4000">
+              </div>
+              <div class="field">
+                <label for="silenceRms">Silence RMS</label>
+                <input id="silenceRms" type="number" min="0" max="1" step="0.001" value="0.01">
+              </div>
+            </div>
+          </div>
+
+          <div class="field mode-settings" id="phraseSettings">
+            <label>Phrase endpointing</label>
+            <div class="grid compact">
+              <div class="field">
+                <label for="phraseSilenceMs">End silence ms</label>
+                <input id="phraseSilenceMs" type="number" min="100" max="5000" step="50" value="700">
+              </div>
+              <div class="field">
+                <label for="speechStartRms">Start RMS</label>
+                <input id="speechStartRms" type="number" min="0" max="1" step="0.001" value="0.012">
+              </div>
+              <div class="field">
+                <label for="speechContinueRms">Continue RMS</label>
+                <input id="speechContinueRms" type="number" min="0" max="1" step="0.001" value="0.008">
+              </div>
+              <div class="field">
+                <label for="minSpeechMs">Min speech ms</label>
+                <input id="minSpeechMs" type="number" min="0" max="5000" step="50" value="250">
+              </div>
+              <div class="field">
+                <label for="preRollMs">Pre-roll ms</label>
+                <input id="preRollMs" type="number" min="0" max="5000" step="50" value="300">
+              </div>
+              <div class="field">
+                <label for="maxPhraseMs">Max phrase ms</label>
+                <input id="maxPhraseMs" type="number" min="1000" max="120000" step="500" value="12000">
+              </div>
+              <div class="field">
+                <label for="longWindowMs">Long window ms</label>
+                <input id="longWindowMs" type="number" min="1000" max="120000" step="500" value="12000">
+              </div>
+              <div class="field">
+                <label for="longStepMs">Long step ms</label>
+                <input id="longStepMs" type="number" min="500" max="120000" step="500" value="8000">
+              </div>
+              <div class="field">
+                <label for="longOverlapMs">Long overlap ms</label>
+                <input id="longOverlapMs" type="number" min="0" max="120000" step="500" value="4000">
+              </div>
+              <div class="field">
+                <label for="urgentMinMs">Urgent min ms</label>
+                <input id="urgentMinMs" type="number" min="0" max="30000" step="100" value="800">
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="liveApiKey">API key</label>
+            <input id="liveApiKey" type="text" autocomplete="off" placeholder="Leave empty when API key is disabled">
+          </div>
+
+          <div class="actions">
+            <button id="liveStart" type="submit">Start live test</button>
+            <button id="liveStop" class="danger" type="button" disabled>Stop</button>
+          </div>
+          <button id="liveForce" class="secondary" type="button" style="margin-top: 10px;" disabled>Force decode now</button>
+          <button id="liveReset" class="secondary" type="button" style="margin-top: 10px;">Reset output</button>
+        </form>
+
+        <section class="panel">
+          <div class="result-head">
+            <h2>Live transcript</h2>
+            <span class="pill" id="liveMeta">idle</span>
+          </div>
+          <div class="stats">
+            <div class="stat">Window<strong id="statWindow">0 ms</strong></div>
+            <div class="stat">Effective<strong id="statEffectiveWindow">0 ms</strong></div>
+            <div class="stat">Decode<strong id="statDecode">0 ms</strong></div>
+            <div class="stat">RTF<strong id="statRtf">0.00</strong></div>
+            <div class="stat">Avg RTF<strong id="statAvgRtf">0.00</strong></div>
+            <div class="stat">Lag<strong id="statLag">0 ms</strong></div>
+            <div class="stat">Queue<strong id="statQueue">0 / 0 ms</strong></div>
+            <div class="stat">Revision<strong id="statRevision">0</strong></div>
+            <div class="stat">Action<strong id="statAction">normal</strong></div>
+            <div class="stat">VAD<strong id="statVad">silence</strong></div>
+            <div class="stat">Phrase<strong id="statPhrase">0 ms</strong></div>
+            <div class="stat">Windows<strong id="statWindows">0</strong></div>
+            <div class="stat">Stitch<strong id="statStitch">none</strong></div>
+            <div class="stat">Skipped<strong id="statSkipped">0 ms</strong></div>
+            <div class="stat">Dropped<strong id="statDropped">0</strong></div>
+          </div>
+          <div class="queue-meter" aria-label="Queue fill"><span id="queueBar"></span></div>
+          <div class="diagnostic-strip">
+            <div class="diagnostic-card">Mode<strong id="diagMode">phrase_endpoint</strong></div>
+            <div class="diagnostic-card">Last RMS<strong id="diagRms">0.0000</strong></div>
+            <div class="diagnostic-card">Thresholds<strong id="diagThresholds">0.012 / 0.008</strong></div>
+            <div class="diagnostic-card">Phrase ID<strong id="diagPhraseId">0</strong></div>
+          </div>
+          <div class="phrase-meter" aria-label="Phrase fill"><span id="phraseBar"></span></div>
+          <div id="speedHistory" class="history">Speed history will appear here.</div>
+          <div class="live-buckets">
+            <section class="live-bucket final-lane" aria-label="Final transcript">
+              <h3>Final</h3>
+              <div id="liveFinalText" class="live-bucket-text">No final text yet.</div>
+            </section>
+            <section class="live-bucket draft-lane" aria-label="Draft transcript">
+              <h3>In work</h3>
+              <div id="liveDraftText" class="live-bucket-text">No working text yet.</div>
+            </section>
+            <section class="live-bucket raw-lane" aria-label="Raw transcript tail">
+              <h3>Raw</h3>
+              <div id="liveRawText" class="live-bucket-text raw">No raw tail.</div>
+            </section>
+          </div>
+          <details class="debug-panel">
+            <summary>Full event log</summary>
+            <pre id="liveJson" data-live-json>{}</pre>
+          </details>
+        </section>
+      </section>
+    </section>
+
+    <section class="tab-panel" id="tab-diagram" hidden>
+      <section class="diagram-layout">
+        <section class="panel">
+          <div class="result-head">
+            <h2>Live timeline</h2>
+            <span class="pill" id="diagramMeta">idle</span>
+          </div>
+          <div class="grid compact" style="margin-bottom: 12px;">
+            <div class="field">
+              <label for="eventFilter">Event filter</label>
+              <select id="eventFilter">
+                <option value="all">All events</option>
+                <option value="decode_text">Decode jobs with text</option>
+                <option value="decode">Decode jobs</option>
+                <option value="phrase">Phrase / VAD events</option>
+                <option value="text">Events with text</option>
+                <option value="problems">Warnings / queue / drops</option>
+              </select>
+            </div>
+          </div>
+          <div class="timeline-legend">
+            <span class="legend-chip frame">input frame</span>
+            <span class="legend-chip silence">silence skipped</span>
+            <span class="legend-chip job">decode job</span>
+            <span class="legend-chip window">rolling window</span>
+            <span class="legend-chip effective">effective window</span>
+            <span class="legend-chip queue">queue</span>
+            <span class="legend-chip vad-candidate">speech candidate</span>
+            <span class="legend-chip vad-speech">speech</span>
+            <span class="legend-chip vad-trailing">trailing silence</span>
+            <span class="legend-chip force">force/draft</span>
+          </div>
+          <div class="timeline" id="timeline"><div class="timeline-inner" id="timelineInner"></div></div>
+        </section>
+
+        <section class="panel">
+          <div class="result-head">
+            <h2>Sequence texts</h2>
+            <span class="pill" id="filterMeta">all events</span>
+          </div>
+          <table class="seq-table">
+            <thead>
+              <tr>
+                <th>Seq</th>
+                <th>Kind</th>
+                <th>RTF</th>
+                <th>Action</th>
+                <th>Text</th>
+              </tr>
+            </thead>
+            <tbody id="seqTableBody"></tbody>
+          </table>
+        </section>
+
+        <section class="panel">
+          <div class="result-head">
+            <h2>Full event log</h2>
+            <span class="pill">raw WS</span>
+          </div>
+          <pre id="liveJsonDiagram" data-live-json>{}</pre>
+        </section>
       </section>
     </section>
   </main>
@@ -257,19 +880,67 @@
     const form = document.querySelector("#form");
     const submit = document.querySelector("#submit");
     const modelSelect = document.querySelector("#model");
+    const liveModelSelect = document.querySelector("#liveModel");
     const healthBox = document.querySelector("#health");
     const jsonBox = document.querySelector("#json");
     const transcriptBox = document.querySelector("#transcript");
     const metaBox = document.querySelector("#meta");
+    const liveForm = document.querySelector("#liveForm");
+    const liveAudio = document.querySelector("#liveAudio");
+    const liveStart = document.querySelector("#liveStart");
+    const liveStop = document.querySelector("#liveStop");
+    const liveForce = document.querySelector("#liveForce");
+    const liveReset = document.querySelector("#liveReset");
+    const liveMeta = document.querySelector("#liveMeta");
+    const liveFinalText = document.querySelector("#liveFinalText");
+    const liveDraftText = document.querySelector("#liveDraftText");
+    const liveRawText = document.querySelector("#liveRawText");
+    const liveJsonPanels = document.querySelectorAll("[data-live-json]");
+    const eventFilter = document.querySelector("#eventFilter");
+    const liveFinalSegments = new Map();
+    const liveDraftSegments = new Map();
+    let liveRaw = [];
+    let liveSocket = null;
+    let liveRunning = false;
+    let liveLastSentSeq = 0;
+    let liveLastReceivedSeq = 0;
+    let liveDrainResolve = null;
+    let liveWaitingForFlush = false;
+    const speedHistory = [];
+    const seqRecords = [];
+    const eventLog = [];
+    const timelineFrames = [];
+    const timelineJobs = [];
+    const frameBySeq = new Map();
+    const decodeSummary = { count: 0, decodeMs: 0, budgetMs: 0, maxRtf: 0 };
 
     function authHeaders() {
-      const key = document.querySelector("#apiKey").value.trim();
+      const key = apiKey();
       return key ? { Authorization: `Bearer ${key}` } : {};
     }
 
+    function apiKey() {
+      const fileKey = document.querySelector("#apiKey").value.trim();
+      const liveKey = document.querySelector("#liveApiKey").value.trim();
+      return fileKey || liveKey;
+    }
+
     function showError(message) {
-      transcriptBox.innerHTML = `<span class="error">${message}</span>`;
-      metaBox.textContent = "ошибка";
+      transcriptBox.innerHTML = `<span class="error">${escapeHtml(message)}</span>`;
+      metaBox.textContent = "error";
+    }
+
+    function showLiveError(message) {
+      liveMeta.textContent = "error";
+      liveDraftText.innerHTML = `<span class="error">${escapeHtml(message)}</span>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
     }
 
     async function loadHealth() {
@@ -281,17 +952,673 @@
     async function loadModels() {
       const response = await fetch("/v1/models", { headers: authHeaders() });
       if (!response.ok) {
-        modelSelect.innerHTML = `<option value="mock">mock</option>`;
+        populateModels([{ id: "mock", backend: "mock" }], "mock");
         return;
       }
       const data = await response.json();
-      modelSelect.innerHTML = "";
-      for (const model of data.models) {
-        const option = document.createElement("option");
-        option.value = model.id;
-        option.textContent = `${model.id} (${model.backend})`;
-        option.selected = model.id === data.default_model;
-        modelSelect.appendChild(option);
+      populateModels(data.models, data.default_model);
+    }
+
+    async function shutdownService() {
+      const confirmed = window.confirm("Stop Local ASR Service?");
+      if (!confirmed) return;
+
+      const button = document.querySelector("#shutdownService");
+      button.disabled = true;
+      try {
+        const response = await fetch("/shutdown", {
+          method: "POST",
+          headers: authHeaders(),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.detail || "Shutdown request failed");
+        }
+        healthBox.innerHTML = "<strong>Stopping</strong>Service is shutting down.";
+      } catch (error) {
+        button.disabled = false;
+        healthBox.innerHTML = `<strong>Shutdown failed</strong>${escapeHtml(error.message)}`;
+      }
+    }
+
+    function populateModels(models, defaultModel) {
+      for (const select of [modelSelect, liveModelSelect]) {
+        select.innerHTML = "";
+        for (const model of models) {
+          const option = document.createElement("option");
+          option.value = model.id;
+          option.textContent = `${model.id} (${model.backend})`;
+          option.selected = model.id === defaultModel;
+          select.appendChild(option);
+        }
+      }
+    }
+
+    function setTab(name) {
+      for (const button of document.querySelectorAll(".tab-button")) {
+        button.classList.toggle("active", button.dataset.tab === name);
+      }
+      document.querySelector("#tab-file").hidden = name !== "file";
+      document.querySelector("#tab-live").hidden = name !== "live";
+      document.querySelector("#tab-diagram").hidden = name !== "diagram";
+    }
+
+    function websocketUrl() {
+      const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+      const url = new URL(`${protocol}//${location.host}/v1/stream`);
+      const key = apiKey();
+      if (key) url.searchParams.set("api_key", key);
+      return url.toString();
+    }
+
+    function bytesToBase64(bytes) {
+      let binary = "";
+      const step = 0x8000;
+      for (let i = 0; i < bytes.length; i += step) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + step));
+      }
+      return btoa(binary);
+    }
+
+    function pcmRms(bytes) {
+      const samples = new Int16Array(bytes.buffer, bytes.byteOffset, Math.floor(bytes.byteLength / 2));
+      if (!samples.length) return 0;
+      let sum = 0;
+      for (let i = 0; i < samples.length; i += 1) {
+        const value = samples[i] / 32768;
+        sum += value * value;
+      }
+      return Math.sqrt(sum / samples.length);
+    }
+
+    function adaptationUsesSilenceGate() {
+      if (document.querySelector("#liveMode").value === "phrase_endpoint") return false;
+      const mode = document.querySelector("#adaptationMode").value;
+      return mode === "silence_gate" || mode === "combined";
+    }
+
+    function updateModeUi() {
+      const mode = document.querySelector("#liveMode").value;
+      document.querySelector("#revisionSettings").hidden = mode !== "live_revision";
+      document.querySelector("#phraseSettings").hidden = mode !== "phrase_endpoint";
+      document.querySelector("#diagMode").textContent = mode;
+      document.querySelector("#diagThresholds").textContent =
+        `${Number(document.querySelector("#speechStartRms").value).toFixed(3)} / ${Number(document.querySelector("#speechContinueRms").value).toFixed(3)}`;
+      if (!liveRunning) liveForce.disabled = mode !== "phrase_endpoint";
+    }
+
+    async function fileToPcm16Mono16k(file) {
+      const arrayBuffer = await file.arrayBuffer();
+      const context = new AudioContext();
+      const decoded = await context.decodeAudioData(arrayBuffer.slice(0));
+      await context.close();
+      const targetRate = 16000;
+      const frameCount = Math.max(1, Math.ceil(decoded.duration * targetRate));
+      const offline = new OfflineAudioContext(1, frameCount, targetRate);
+      const source = offline.createBufferSource();
+      source.buffer = decoded;
+      source.connect(offline.destination);
+      source.start(0);
+      const rendered = await offline.startRendering();
+      const samples = rendered.getChannelData(0);
+      const pcm = new Int16Array(samples.length);
+      for (let i = 0; i < samples.length; i += 1) {
+        const clamped = Math.max(-1, Math.min(1, samples[i]));
+        pcm[i] = clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff;
+      }
+      return new Uint8Array(pcm.buffer);
+    }
+
+    function renderSegmentMap(segments, emptyText) {
+      const rendered = [...segments.values()]
+        .sort((a, b) => a.start_ms - b.start_ms)
+        .map((segment) => `<span class="${segment.status}">${escapeHtml(segment.text)}</span>`)
+        .join(" ");
+      return rendered || escapeHtml(emptyText);
+    }
+
+    function renderLive(data) {
+      liveLastReceivedSeq = Math.max(liveLastReceivedSeq, data.seq || 0);
+      if (data.updates) {
+        for (const segment of data.updates) {
+          const target = segment.status === "final" ? liveFinalSegments : liveDraftSegments;
+          if (!segment.text || !segment.text.trim()) {
+            target.delete(segment.id);
+            continue;
+          }
+          const current = target.get(segment.id);
+          if (!current || segment.revision >= current.revision) {
+            target.set(segment.id, segment);
+            if (segment.status === "final") {
+              const draft = liveDraftSegments.get(segment.id);
+              if (draft && segment.revision >= draft.revision) {
+                liveDraftSegments.delete(segment.id);
+              }
+            }
+          }
+        }
+      }
+      liveRaw = data.raw || [];
+      const raw = liveRaw.map((segment) => escapeHtml(segment.text)).join(" ");
+      liveFinalText.innerHTML = renderSegmentMap(liveFinalSegments, "No final text yet.");
+      liveDraftText.innerHTML = renderSegmentMap(liveDraftSegments, "No working text yet.");
+      liveRawText.innerHTML = raw || "No raw tail.";
+      const isDecodeJob = Number(data.stats.decode_ms || 0) > 0;
+      if (isDecodeJob) updateDecodeSummary(data.stats);
+      document.querySelector("#statWindow").textContent = `${data.stats.audio_window_ms} ms`;
+      document.querySelector("#statEffectiveWindow").textContent = `${data.stats.effective_window_ms || data.stats.audio_window_ms} ms`;
+      document.querySelector("#statDecode").textContent = `${data.stats.decode_ms} ms`;
+      document.querySelector("#statRtf").textContent = isDecodeJob ? Number(data.stats.realtime_factor || 0).toFixed(2) : "-";
+      document.querySelector("#statAvgRtf").textContent = averageRtfText();
+      document.querySelector("#statLag").textContent = `${data.stats.lag_ms} ms`;
+      document.querySelector("#statQueue").textContent = `${data.stats.queue_chunks || 0} / ${data.stats.queue_ms || 0} ms`;
+      document.querySelector("#statRevision").textContent = data.revision;
+      document.querySelector("#statAction").textContent = data.stats.adaptation_action || "normal";
+      document.querySelector("#statVad").textContent = data.stats.vad_state || "silence";
+      document.querySelector("#statPhrase").textContent = `${data.stats.current_phrase_ms || 0} ms`;
+      document.querySelector("#statWindows").textContent = data.stats.decoded_windows || 0;
+      document.querySelector("#statStitch").textContent = data.stats.stitch_confidence || "none";
+      document.querySelector("#diagMode").textContent = document.querySelector("#liveMode").value;
+      document.querySelector("#diagPhraseId").textContent = data.stats.phrase_id || 0;
+      document.querySelector("#statSkipped").textContent = `${data.stats.silence_skipped_ms || 0} ms`;
+      document.querySelector("#statDropped").textContent = data.stats.dropped_chunks || 0;
+      renderQueue(data.stats.queue_chunks || 0);
+      renderPhraseMeter(data.stats);
+      updateFrameDiagnostics(data);
+      pushSpeedHistory(data);
+      recordSeqEvent(data);
+      renderTimeline(data);
+      renderSeqTable();
+      liveMeta.textContent = `seq ${liveLastReceivedSeq}/${liveLastSentSeq || data.seq}`;
+      const isFlushDelta = liveWaitingForFlush && (data.stats.decode_ms === 0 || data.stats.adaptation_action === "flush");
+      if (liveDrainResolve && liveLastReceivedSeq >= liveLastSentSeq && isFlushDelta) {
+        liveWaitingForFlush = false;
+        liveDrainResolve();
+        liveDrainResolve = null;
+      }
+    }
+
+    function renderQueue(queueChunks) {
+      const percent = Math.min(100, queueChunks * 20);
+      const bar = document.querySelector("#queueBar");
+      bar.style.width = `${percent}%`;
+      bar.style.background = queueChunks > 3 ? "var(--danger)" : queueChunks > 0 ? "var(--draft)" : "var(--accent)";
+    }
+
+    function renderPhraseMeter(stats) {
+      const phraseMs = Number(stats.current_phrase_ms || 0);
+      const maxPhraseMs = Math.max(1, Number(document.querySelector("#maxPhraseMs").value || 12000));
+      const percent = Math.min(100, Math.round(phraseMs / maxPhraseMs * 100));
+      const bar = document.querySelector("#phraseBar");
+      bar.style.width = `${percent}%`;
+      bar.style.background = (stats.vad_state || "") === "trailing_silence" ? "#f97316" : (stats.vad_state || "") === "speech" ? "var(--accent)" : "var(--draft)";
+    }
+
+    function updateDecodeSummary(stats) {
+      const budgetMs = Number(stats.decode_interval_ms || stats.current_phrase_ms || stats.audio_window_ms || document.querySelector("#decodeJobMs").value || stats.audio_step_ms || 0);
+      decodeSummary.count += 1;
+      decodeSummary.decodeMs += Number(stats.decode_ms || 0);
+      decodeSummary.budgetMs += budgetMs;
+      decodeSummary.maxRtf = Math.max(decodeSummary.maxRtf, Number(stats.realtime_factor || 0));
+    }
+
+    function averageRtf() {
+      return decodeSummary.budgetMs > 0 ? decodeSummary.decodeMs / decodeSummary.budgetMs : 0;
+    }
+
+    function averageRtfText() {
+      return decodeSummary.count ? averageRtf().toFixed(2) : "0.00";
+    }
+
+    function pushSpeedHistory(data) {
+      const stats = data.stats;
+      if (!stats || Number(stats.decode_ms || 0) <= 0) return;
+      const status = (stats.realtime_factor || 0) <= 0.75 ? "reserve" : (stats.realtime_factor || 0) <= 1 ? "OK" : "slow";
+      speedHistory.unshift(
+        `seq ${data.seq}: RTF ${Number(stats.realtime_factor || 0).toFixed(2)} (${status}), avg ${averageRtfText()}, decode ${stats.decode_ms} ms / ${stats.decode_interval_ms || document.querySelector("#decodeJobMs").value} ms budget, window ${stats.effective_window_ms || stats.audio_window_ms} ms, queue ${stats.queue_chunks || 0}, ${stats.adaptation_action || "normal"}`
+      );
+      speedHistory.splice(12);
+      document.querySelector("#speedHistory").innerHTML = speedHistory.map((line) => `<div>${escapeHtml(line)}</div>`).join("");
+    }
+
+    function appendLiveEvent(data) {
+      eventLog.push(data);
+      renderEventLog();
+    }
+
+    function textFromUpdates(data) {
+      const updates = (data.updates || []).map((segment) => `${segment.status}: ${segment.text}`).filter(Boolean);
+      const raw = (data.raw || []).map((segment) => `raw: ${segment.text}`).filter(Boolean);
+      return [...updates, ...raw].join(" | ");
+    }
+
+    function activeEventFilter() {
+      return eventFilter ? eventFilter.value : "all";
+    }
+
+    function eventMatchesFilter(record, filter = activeEventFilter()) {
+      if (filter === "all") return true;
+      const stats = record.stats || {};
+      const kind = record.kind || (record.type === "live_delta" && Number(stats.decode_ms || 0) > 0 ? "decode" : "meta");
+      const text = record.text || textFromUpdates(record);
+      const hasText = Boolean(text && text.trim());
+      const action = stats.adaptation_action || record.action || "";
+      if (filter === "decode_text") return kind === "decode" && hasText;
+      if (filter === "decode") return kind === "decode" || record.shouldDecode;
+      if (filter === "phrase") return Boolean(stats.vad_state || record.vadState || record.phraseId || action === "force decode" || action === "phrase final" || action === "long partial");
+      if (filter === "text") return hasText;
+      if (filter === "problems") {
+        return Number(stats.queue_chunks || record.queueChunks || 0) > 0
+          || Number(stats.dropped_chunks || 0) > 0
+          || Number(stats.realtime_factor || 0) > 1
+          || ["slow", "warning", "decode skipped", "window reduced"].includes(action);
+      }
+      return true;
+    }
+
+    function renderEventLog() {
+      const filtered = eventLog.filter((event) => eventMatchesFilter(event));
+      const text = filtered.length ? filtered.map((event) => JSON.stringify(event, null, 2)).join("\n\n") : "{}";
+      for (const panel of liveJsonPanels) {
+        panel.textContent = text;
+        panel.scrollTop = panel.scrollHeight;
+      }
+    }
+
+    function recordSeqEvent(data) {
+      const stats = data.stats || {};
+      const kind = stats.adaptation_action === "silence skipped" ? "silence" : stats.decode_ms === 0 ? "meta" : "decode";
+      const text = textFromUpdates(data);
+      seqRecords.push({
+        seq: data.seq,
+        kind,
+        rtf: kind === "decode" ? Number(stats.realtime_factor || 0).toFixed(2) : "-",
+        action: stats.adaptation_action || "normal",
+        text: text || `vad=${stats.vad_state || "-"} phrase=${stats.current_phrase_ms || 0}ms windows=${stats.decoded_windows || 0}`,
+        audioReceivedMs: stats.audio_received_ms || 0,
+        stepMs: stats.audio_step_ms || 0,
+        windowMs: stats.audio_window_ms || 0,
+        effectiveWindowMs: stats.effective_window_ms || stats.audio_window_ms || 0,
+        queueMs: stats.queue_ms || 0,
+      });
+      if (kind === "decode" || stats.adaptation_action === "decode skipped" || stats.adaptation_action === "force decode" || stats.adaptation_action === "phrase final" || stats.adaptation_action === "long partial") {
+        const audioEnd = stats.audio_received_ms || 0;
+        const isPhraseJob = Boolean(stats.vad_state || stats.phrase_id);
+        const phraseMs = stats.current_phrase_ms || stats.audio_window_ms || 0;
+        timelineJobs.push({
+          seq: data.seq,
+          kind,
+          text,
+          action: stats.adaptation_action || "normal",
+          audioEndMs: audioEnd,
+          windowStartMs: isPhraseJob ? Math.max(0, audioEnd - phraseMs) : Math.max(0, audioEnd - (stats.audio_window_ms || 0)),
+          effectiveStartMs: isPhraseJob ? Math.max(0, audioEnd - phraseMs) : Math.max(0, audioEnd - (stats.effective_window_ms || stats.audio_window_ms || 0)),
+          windowMs: isPhraseJob ? phraseMs : stats.audio_window_ms || 0,
+          effectiveWindowMs: isPhraseJob ? phraseMs : stats.effective_window_ms || stats.audio_window_ms || 0,
+          queueMs: stats.queue_ms || 0,
+          rtf: stats.realtime_factor || 0,
+          phraseId: stats.phrase_id || 0,
+          vadState: stats.vad_state || "",
+          decodedWindows: stats.decoded_windows || 0,
+          stats,
+        });
+      }
+    }
+
+    function updateFrameDiagnostics(data) {
+      const frame = frameBySeq.get(data.seq);
+      if (!frame || !data.stats) return;
+      frame.vadState = data.stats.vad_state || "";
+      frame.serverAction = data.stats.adaptation_action || "";
+      frame.phraseId = data.stats.phrase_id || 0;
+      frame.currentPhraseMs = data.stats.current_phrase_ms || 0;
+      frame.decodedWindows = data.stats.decoded_windows || 0;
+    }
+
+    function recordFrameEvent(record) {
+      timelineFrames.push(record);
+      frameBySeq.set(record.seq, record);
+      seqRecords.push({
+        seq: record.seq,
+        kind: record.kind,
+        rtf: "-",
+        action: record.kind === "silence" ? "silence skipped client-side" : record.shouldDecode ? "decode job queued" : "frame sent",
+        text: `t=${record.startMs}-${record.endMs}ms rms=${record.rms.toFixed(4)}`,
+        audioReceivedMs: record.endMs,
+        stepMs: record.durationMs,
+        windowMs: 0,
+        effectiveWindowMs: 0,
+        queueMs: 0,
+      });
+    }
+
+    function renderSeqTable() {
+      const visible = seqRecords.filter((record) => eventMatchesFilter(record));
+      const rows = visible.map((record) => `
+        <tr>
+          <td>${record.seq}</td>
+          <td>${escapeHtml(record.kind)}</td>
+          <td>${record.rtf}</td>
+          <td>${escapeHtml(record.action)}</td>
+          <td class="seq-text">${escapeHtml(record.text || "-")}</td>
+        </tr>
+      `).join("");
+      document.querySelector("#seqTableBody").innerHTML = rows || "<tr><td colspan=\"5\">No sequence events yet.</td></tr>";
+      const filterMeta = document.querySelector("#filterMeta");
+      if (filterMeta) filterMeta.textContent = `${activeEventFilter()} · ${visible.length}/${seqRecords.length}`;
+    }
+
+    function timelineItem(left, width, top, className, label) {
+      return `<div class="timeline-item ${className}" style="left:${left}px;width:${width}px;top:${top}px;">${escapeHtml(label)}</div>`;
+    }
+
+    function frameClassName(frame) {
+      if (frame.kind === "silence") return "silence";
+      if (frame.vadState === "speech_candidate") return "vad-candidate";
+      if (frame.vadState === "speech") return "vad-speech";
+      if (frame.vadState === "trailing_silence") return "vad-trailing";
+      if (frame.vadState === "silence") return "vad-silence";
+      return frame.shouldDecode ? "job" : "frame";
+    }
+
+    function renderTimeline(data = null) {
+      const stats = data?.stats || {};
+      const maxFromFrames = timelineFrames.reduce((max, frame) => Math.max(max, frame.endMs), 0);
+      const maxFromJobs = timelineJobs.reduce((max, job) => Math.max(max, job.audioEndMs), 0);
+      const maxMs = Math.max(stats.audio_received_ms || 1, maxFromFrames, maxFromJobs, 1000);
+      const pxPerMs = 0.06;
+      const width = Math.max(760, Math.ceil(maxMs * pxPerMs) + 36);
+      const filter = activeEventFilter();
+      const visibleFrames = filter === "all" ? timelineFrames : timelineFrames.filter((frame) => eventMatchesFilter(frame, filter));
+      const visibleJobs = timelineJobs.filter((job) => eventMatchesFilter(job, filter));
+      const parts = visibleFrames.map((frame) => {
+        const className = frameClassName(frame);
+        const label = frame.vadState ? `${frame.seq} ${frame.vadState}` : `${frame.seq}`;
+        return timelineItem(frame.startMs * pxPerMs, Math.max(2, frame.durationMs * pxPerMs), frame.shouldDecode ? 190 : 218, className, label);
+      });
+      visibleJobs.forEach((job, index) => {
+        const laneTop = 16 + (index % 5) * 30;
+        parts.push(timelineItem(job.windowStartMs * pxPerMs, Math.max(2, job.windowMs * pxPerMs), laneTop, "window", `seq ${job.seq} window`));
+        parts.push(timelineItem(job.effectiveStartMs * pxPerMs, Math.max(2, job.effectiveWindowMs * pxPerMs), laneTop + 14, "effective", `eff ${job.effectiveWindowMs}ms`));
+        const jobClass = job.action === "force decode" ? "force" : job.action === "decode skipped" ? "dropped" : "job";
+        const jobLabel = job.phraseId ? `phrase ${job.phraseId} ${job.action} · ${job.decodedWindows || 0}w` : `${job.seq} RTF ${Number(job.rtf || 0).toFixed(2)}`;
+        parts.push(timelineItem(job.audioEndMs * pxPerMs, Math.max(3, 26), 164, jobClass, jobLabel));
+        if (job.queueMs > 0) {
+          parts.push(timelineItem(job.audioEndMs * pxPerMs, Math.max(2, job.queueMs * pxPerMs), 246, "queue", `q ${job.queueMs}ms`));
+        }
+      });
+      if (data?.stats?.audio_received_ms) {
+        parts.push(timelineItem(data.stats.audio_received_ms * pxPerMs, 2, 6, "final-line", `now ${data.stats.audio_received_ms}`));
+      }
+      document.querySelector("#timelineInner").style.width = `${width}px`;
+      document.querySelector("#timelineInner").innerHTML = parts.join("");
+      document.querySelector("#timeline").scrollLeft = width;
+      document.querySelector("#diagramMeta").textContent = `frames ${timelineFrames.length} · jobs ${timelineJobs.length} · avg RTF ${averageRtfText()} · ${maxMs} ms`;
+    }
+
+    function resetLiveOutput() {
+      liveFinalSegments.clear();
+      liveDraftSegments.clear();
+      liveRaw = [];
+      speedHistory.splice(0);
+      seqRecords.splice(0);
+      eventLog.splice(0);
+      timelineFrames.splice(0);
+      timelineJobs.splice(0);
+      frameBySeq.clear();
+      decodeSummary.count = 0;
+      decodeSummary.decodeMs = 0;
+      decodeSummary.budgetMs = 0;
+      decodeSummary.maxRtf = 0;
+      liveLastSentSeq = 0;
+      liveLastReceivedSeq = 0;
+      liveDrainResolve = null;
+      liveWaitingForFlush = false;
+      liveFinalText.textContent = "No final text yet.";
+      liveDraftText.textContent = "No working text yet.";
+      liveRawText.textContent = "No raw tail.";
+      renderEventLog();
+      liveMeta.textContent = "idle";
+      document.querySelector("#statWindow").textContent = "0 ms";
+      document.querySelector("#statEffectiveWindow").textContent = "0 ms";
+      document.querySelector("#statDecode").textContent = "0 ms";
+      document.querySelector("#statRtf").textContent = "0.00";
+      document.querySelector("#statAvgRtf").textContent = "0.00";
+      document.querySelector("#statLag").textContent = "0 ms";
+      document.querySelector("#statQueue").textContent = "0 / 0 ms";
+      document.querySelector("#statRevision").textContent = "0";
+      document.querySelector("#statAction").textContent = "normal";
+      document.querySelector("#statVad").textContent = "silence";
+      document.querySelector("#statPhrase").textContent = "0 ms";
+      document.querySelector("#statWindows").textContent = "0";
+      document.querySelector("#statStitch").textContent = "none";
+      document.querySelector("#diagMode").textContent = document.querySelector("#liveMode").value;
+      document.querySelector("#diagRms").textContent = "0.0000";
+      document.querySelector("#diagThresholds").textContent =
+        `${Number(document.querySelector("#speechStartRms").value).toFixed(3)} / ${Number(document.querySelector("#speechContinueRms").value).toFixed(3)}`;
+      document.querySelector("#diagPhraseId").textContent = "0";
+      document.querySelector("#statSkipped").textContent = "0 ms";
+      document.querySelector("#statDropped").textContent = "0";
+      document.querySelector("#queueBar").style.width = "0%";
+      document.querySelector("#phraseBar").style.width = "0%";
+      document.querySelector("#speedHistory").textContent = "Speed history will appear here.";
+      document.querySelector("#seqTableBody").innerHTML = "";
+      document.querySelector("#timelineInner").innerHTML = "";
+      document.querySelector("#diagramMeta").textContent = "idle";
+    }
+
+    function stopLive() {
+      liveRunning = false;
+      liveStart.disabled = false;
+      liveStop.disabled = true;
+      liveForce.disabled = true;
+      liveAudio.pause();
+      if (liveDrainResolve) {
+        liveDrainResolve();
+        liveDrainResolve = null;
+      }
+      liveWaitingForFlush = false;
+      if (liveSocket && liveSocket.readyState === WebSocket.OPEN) {
+        liveSocket.send(JSON.stringify({ type: "flush" }));
+        liveSocket.send(JSON.stringify({ type: "close" }));
+        liveSocket.close();
+      }
+      liveSocket = null;
+    }
+
+    function forceDecodeLive() {
+      if (!liveSocket || liveSocket.readyState !== WebSocket.OPEN) return;
+      if (document.querySelector("#liveMode").value !== "phrase_endpoint") return;
+      timelineJobs.push({
+        seq: liveLastSentSeq,
+        kind: "decode",
+        text: "force decode requested",
+        action: "force decode",
+        audioEndMs: timelineFrames.at(-1)?.endMs || 0,
+        windowStartMs: Math.max(0, (timelineFrames.at(-1)?.endMs || 0) - Number(document.querySelector("#statPhrase").textContent.replace(" ms", "") || 0)),
+        effectiveStartMs: Math.max(0, (timelineFrames.at(-1)?.endMs || 0) - Number(document.querySelector("#statPhrase").textContent.replace(" ms", "") || 0)),
+        windowMs: Number(document.querySelector("#statPhrase").textContent.replace(" ms", "") || 0),
+        effectiveWindowMs: Number(document.querySelector("#statPhrase").textContent.replace(" ms", "") || 0),
+        queueMs: 0,
+        rtf: 0,
+        phraseId: Number(document.querySelector("#diagPhraseId").textContent || 0),
+        vadState: document.querySelector("#statVad").textContent,
+        decodedWindows: 0,
+        stats: { vad_state: document.querySelector("#statVad").textContent },
+      });
+      renderTimeline();
+      liveSocket.send(JSON.stringify({
+        type: "force_decode",
+        seq: liveLastSentSeq,
+        reason: "urgent",
+      }));
+    }
+
+    function waitForServerDrain(timeoutMs) {
+      if (liveLastReceivedSeq >= liveLastSentSeq && !liveWaitingForFlush) {
+        return Promise.resolve();
+      }
+      return new Promise((resolve) => {
+        const timer = setTimeout(() => {
+          if (liveDrainResolve === done) liveDrainResolve = null;
+          resolve();
+        }, timeoutMs);
+        const done = () => {
+          clearTimeout(timer);
+          resolve();
+        };
+        liveDrainResolve = done;
+      });
+    }
+
+    async function finishLiveAfterFileSent() {
+      liveRunning = false;
+      liveStop.disabled = false;
+      liveMeta.textContent = `waiting for server ${liveLastReceivedSeq}/${liveLastSentSeq}`;
+      if (liveSocket && liveSocket.readyState === WebSocket.OPEN) {
+        liveWaitingForFlush = true;
+        liveSocket.send(JSON.stringify({ type: "flush" }));
+      }
+      await waitForServerDrain(Math.max(30000, liveLastSentSeq * 5000));
+      if (liveSocket && liveSocket.readyState === WebSocket.OPEN) {
+        liveSocket.send(JSON.stringify({ type: "close" }));
+        liveSocket.close();
+      }
+      liveSocket = null;
+      liveStart.disabled = false;
+      liveStop.disabled = true;
+      liveForce.disabled = true;
+      liveMeta.textContent = `finished ${liveLastReceivedSeq}/${liveLastSentSeq}`;
+    }
+
+    async function runLive(event) {
+      event.preventDefault();
+      const file = document.querySelector("#liveFile").files[0];
+      if (!file || liveRunning) return;
+
+      resetLiveOutput();
+      liveRunning = true;
+      liveStart.disabled = true;
+      liveStop.disabled = false;
+      liveForce.disabled = false;
+      liveMeta.textContent = "decoding audio...";
+
+      try {
+        const pcm = await fileToPcm16Mono16k(file);
+        const frameMs = Number(document.querySelector("#frameMs").value);
+        const decodeJobMs = Number(document.querySelector("#decodeJobMs").value);
+        const samplesPerChunk = Math.max(1, Math.round(16000 * frameMs / 1000));
+        const bytesPerChunk = samplesPerChunk * 2;
+        const framesPerDecode = Math.max(1, Math.round(decodeJobMs / frameMs));
+        const streamMode = document.querySelector("#liveMode").value;
+        liveForce.disabled = streamMode !== "phrase_endpoint";
+        liveSocket = new WebSocket(websocketUrl());
+
+        await new Promise((resolve, reject) => {
+          liveSocket.addEventListener("open", resolve, { once: true });
+          liveSocket.addEventListener("error", () => reject(new Error("WebSocket connection failed")), { once: true });
+        });
+
+        liveSocket.addEventListener("message", (message) => {
+          const data = JSON.parse(message.data);
+          appendLiveEvent(data);
+          if (data.type === "live_delta") renderLive(data);
+          if (data.type === "error") showLiveError(data.message);
+        });
+        liveSocket.addEventListener("close", () => {
+          if (liveDrainResolve) {
+            liveDrainResolve();
+            liveDrainResolve = null;
+          }
+        });
+
+        liveSocket.send(JSON.stringify({
+          type: "start",
+          stream_mode: streamMode,
+          model_id: liveModelSelect.value,
+          language: document.querySelector("#liveLanguage").value,
+          source: document.querySelector("#liveSource").value,
+          format: "pcm_s16le",
+          sample_rate: 16000,
+          channels: 1,
+          decode_interval_ms: decodeJobMs,
+          window_ms: Number(document.querySelector("#windowMs").value),
+          raw_tail_ms: Number(document.querySelector("#rawTailMs").value),
+          final_lag_ms: Number(document.querySelector("#finalLagMs").value),
+          stable_confirmations: Number(document.querySelector("#stableConfirmations").value),
+          adaptation_mode: document.querySelector("#adaptationMode").value,
+          min_window_ms: Number(document.querySelector("#minWindowMs").value),
+          max_window_ms: Number(document.querySelector("#windowMs").value),
+          rtf_warn_threshold: 1.0,
+          rtf_slow_threshold: 1.2,
+          silence_rms_threshold: Number(document.querySelector("#silenceRms").value),
+          silence_min_ms: frameMs,
+          phrase_silence_ms: Number(document.querySelector("#phraseSilenceMs").value),
+          speech_start_rms: Number(document.querySelector("#speechStartRms").value),
+          speech_continue_rms: Number(document.querySelector("#speechContinueRms").value),
+          min_speech_ms: Number(document.querySelector("#minSpeechMs").value),
+          pre_roll_ms: Number(document.querySelector("#preRollMs").value),
+          max_phrase_ms: Number(document.querySelector("#maxPhraseMs").value),
+          long_window_ms: Number(document.querySelector("#longWindowMs").value),
+          long_window_step_ms: Number(document.querySelector("#longStepMs").value),
+          long_window_overlap_ms: Number(document.querySelector("#longOverlapMs").value),
+          urgent_min_ms: Number(document.querySelector("#urgentMinMs").value),
+        }));
+
+        liveAudio.src = URL.createObjectURL(file);
+        await liveAudio.play();
+        liveMeta.textContent = "streaming...";
+        let seq = 0;
+        for (let offset = 0; offset < pcm.length && liveRunning; offset += bytesPerChunk) {
+          const chunk = pcm.subarray(offset, Math.min(offset + bytesPerChunk, pcm.length));
+          seq += 1;
+          liveLastSentSeq = seq;
+          const durationMs = Math.round(chunk.byteLength / 2 / 16000 * 1000);
+          const rms = pcmRms(chunk);
+          document.querySelector("#diagRms").textContent = rms.toFixed(4);
+          document.querySelector("#diagThresholds").textContent =
+            `${Number(document.querySelector("#speechStartRms").value).toFixed(3)} / ${Number(document.querySelector("#speechContinueRms").value).toFixed(3)}`;
+          const shouldDecode = streamMode !== "phrase_endpoint" && (seq % framesPerDecode === 0 || offset + bytesPerChunk >= pcm.length);
+          const startMs = Math.round(offset / 2 / 16000 * 1000);
+          const kind = adaptationUsesSilenceGate() && rms <= Number(document.querySelector("#silenceRms").value) ? "silence" : "frame";
+          recordFrameEvent({
+            seq,
+            kind,
+            shouldDecode,
+            startMs,
+            endMs: startMs + durationMs,
+            durationMs,
+            rms,
+          });
+          renderTimeline();
+          renderSeqTable();
+          if (adaptationUsesSilenceGate() && rms <= Number(document.querySelector("#silenceRms").value)) {
+            liveSocket.send(JSON.stringify({
+              type: "silence",
+              seq,
+              sent_seq: liveLastSentSeq,
+              duration_ms: durationMs,
+              rms,
+            }));
+          } else {
+            liveSocket.send(JSON.stringify({
+              type: "audio",
+              seq,
+              sent_seq: liveLastSentSeq,
+              start_ms: startMs,
+              duration_ms: durationMs,
+              should_decode: shouldDecode,
+              audio_b64: bytesToBase64(chunk),
+            }));
+          }
+          await new Promise((resolve) => setTimeout(resolve, frameMs));
+        }
+        if (liveRunning) {
+          await finishLiveAfterFileSent();
+        }
+      } catch (error) {
+        showLiveError(error.message);
+        stopLive();
       }
     }
 
@@ -307,8 +1634,8 @@
       body.append("source", document.querySelector("#source").value);
 
       submit.disabled = true;
-      metaBox.textContent = "распознаю...";
-      transcriptBox.textContent = "Идет обработка аудио.";
+      metaBox.textContent = "transcribing...";
+      transcriptBox.textContent = "Processing audio.";
       jsonBox.textContent = "{}";
 
       try {
@@ -320,7 +1647,7 @@
         const data = await response.json();
         jsonBox.textContent = JSON.stringify(data, null, 2);
         if (!response.ok) {
-          showError(data.detail || "Ошибка API");
+          showError(data.detail || "API error");
           return;
         }
         transcriptBox.textContent = data.text || data.segments.map((s) => s.text).join(" ");
@@ -332,11 +1659,32 @@
       }
     });
 
-    document.querySelector("#apiKey").addEventListener("change", loadModels);
-    loadHealth().catch((error) => showError(error.message));
-    loadModels().catch(() => {
-      modelSelect.innerHTML = `<option value="mock">mock</option>`;
+    for (const button of document.querySelectorAll(".tab-button")) {
+      button.addEventListener("click", () => setTab(button.dataset.tab));
+    }
+    document.querySelector("#apiKey").addEventListener("input", () => {
+      document.querySelector("#liveApiKey").value = document.querySelector("#apiKey").value;
     });
+    document.querySelector("#liveApiKey").addEventListener("input", () => {
+      document.querySelector("#apiKey").value = document.querySelector("#liveApiKey").value;
+    });
+    document.querySelector("#apiKey").addEventListener("change", loadModels);
+    document.querySelector("#liveApiKey").addEventListener("change", loadModels);
+    document.querySelector("#shutdownService").addEventListener("click", shutdownService);
+    liveForm.addEventListener("submit", runLive);
+    liveStop.addEventListener("click", stopLive);
+    liveForce.addEventListener("click", forceDecodeLive);
+    liveReset.addEventListener("click", resetLiveOutput);
+    if (eventFilter) {
+      eventFilter.addEventListener("change", () => {
+        renderTimeline();
+        renderSeqTable();
+        renderEventLog();
+      });
+    }
+
+    loadHealth().catch((error) => showError(error.message));
+    loadModels().catch(() => populateModels([{ id: "mock", backend: "mock" }], "mock"));
   </script>
 </body>
 </html>

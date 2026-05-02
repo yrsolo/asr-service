@@ -9,8 +9,10 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -e ".[dev]"
-python -m local_asr_service.main
+.\run.cmd
 ```
+
+On Windows, `run.cmd` opens the service in a separate visible console. Stop it from that console or from the built-in UI with `Stop service`.
 
 Open:
 

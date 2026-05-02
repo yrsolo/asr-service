@@ -1,3 +1,5 @@
+import os
+import threading
 from time import perf_counter
 from pathlib import Path
 from uuid import uuid4
@@ -19,10 +21,16 @@ from local_asr_service.schemas import (
     ModelInfo,
     ModelsResponse,
     SessionStartedMessage,
+    StreamMode,
+    StreamStartMessage,
     TranscribeResponse,
 )
 from local_asr_service.security import require_api_key
-from local_asr_service.streaming import StreamingSession
+from local_asr_service.streaming import (
+    LiveStreamingSession,
+    PhraseEndpointStreamingSession,
+    StreamingSession,
+)
 
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -66,6 +74,12 @@ def _websocket_authorized(websocket: WebSocket) -> bool:
     return auth == f"Bearer {settings.api_key}" or query_key == settings.api_key
 
 
+def _schedule_process_shutdown() -> None:
+    timer = threading.Timer(0.5, lambda: os._exit(0))
+    timer.daemon = True
+    timer.start()
+
+
 def create_app() -> FastAPI:
     app = FastAPI(
         title="Local ASR Service",
@@ -105,6 +119,16 @@ def create_app() -> FastAPI:
             gpu_available=_is_gpu_available(),
             cuda_device_index=settings.cuda_device_index,
         )
+
+    @app.post(
+        "/shutdown",
+        dependencies=[Depends(require_api_key)],
+        tags=["system"],
+        summary="Stop the local ASR service process",
+    )
+    async def shutdown() -> dict[str, str]:
+        _schedule_process_shutdown()
+        return {"status": "shutting_down"}
 
     @app.get(
         "/v1/models",
@@ -203,17 +227,33 @@ def create_app() -> FastAPI:
             )
             await websocket.close(code=1008)
             return
-        session: StreamingSession | None = None
+        session: StreamingSession | LiveStreamingSession | PhraseEndpointStreamingSession | None = None
         try:
             while True:
                 msg = await websocket.receive_json()
                 msg_type = msg.get("type")
                 if msg_type == "start":
-                    session = StreamingSession.from_start_message(msg)
+                    try:
+                        start = StreamStartMessage.model_validate(msg)
+                        if start.stream_mode == StreamMode.LIVE_REVISION:
+                            session = LiveStreamingSession.from_start_message(msg)
+                            effective_config = session.effective_config
+                        elif start.stream_mode == StreamMode.PHRASE_ENDPOINT:
+                            session = PhraseEndpointStreamingSession.from_start_message(msg)
+                            effective_config = session.effective_config
+                        else:
+                            session = StreamingSession.from_start_message(msg)
+                            effective_config = None
+                    except Exception as exc:
+                        await websocket.send_json(
+                            ErrorMessage(code="bad_request", message=str(exc)).model_dump()
+                        )
+                        continue
                     await websocket.send_json(
                         SessionStartedMessage(
                             session_id=session.session_id,
                             model_id=session.model_id,
+                            effective_config=effective_config,
                         ).model_dump(mode="json")
                     )
                 elif msg_type == "audio":
@@ -223,6 +263,38 @@ def create_app() -> FastAPI:
                         )
                         continue
                     delta = session.handle_audio_message(msg)
+                    await websocket.send_json(delta.model_dump(mode="json"))
+                elif msg_type == "silence":
+                    if session is None:
+                        await websocket.send_json(
+                            ErrorMessage(code="bad_request", message="Send start first").model_dump()
+                        )
+                        continue
+                    if not isinstance(session, LiveStreamingSession):
+                        await websocket.send_json(
+                            ErrorMessage(
+                                code="bad_request",
+                                message="silence messages are only supported in live_revision mode",
+                            ).model_dump()
+                        )
+                        continue
+                    delta = session.handle_silence_message(msg)
+                    await websocket.send_json(delta.model_dump(mode="json"))
+                elif msg_type == "force_decode":
+                    if session is None:
+                        await websocket.send_json(
+                            ErrorMessage(code="bad_request", message="Send start first").model_dump()
+                        )
+                        continue
+                    if not isinstance(session, PhraseEndpointStreamingSession):
+                        await websocket.send_json(
+                            ErrorMessage(
+                                code="bad_request",
+                                message="force_decode messages are only supported in phrase_endpoint mode",
+                            ).model_dump()
+                        )
+                        continue
+                    delta = session.handle_force_decode_message(msg)
                     await websocket.send_json(delta.model_dump(mode="json"))
                 elif msg_type == "flush":
                     if session:
