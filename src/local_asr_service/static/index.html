@@ -1622,6 +1622,72 @@
       }
     }
 
+    function renderFileStreamEvent(data, events) {
+      events.push(data);
+      jsonBox.textContent = events.map((event) => JSON.stringify(event, null, 2)).join("\n\n");
+      jsonBox.scrollTop = jsonBox.scrollHeight;
+      if (data.type === "accepted") {
+        metaBox.textContent = `accepted · ${data.model_id}`;
+      } else if (data.type === "progress" || data.type === "heartbeat") {
+        metaBox.textContent = `${data.type} · ${data.elapsed_ms || 0} ms · ${data.message || "processing"}`;
+      } else if (data.type === "segment") {
+        const current = transcriptBox.textContent === "Processing audio." ? "" : transcriptBox.textContent;
+        transcriptBox.textContent = `${current}${current ? " " : ""}${data.text || ""}`.trim();
+        metaBox.textContent = `segment ${data.seq || ""} · ${data.elapsed_ms || 0} ms`;
+      } else if (data.type === "completed") {
+        const response = data.response;
+        transcriptBox.textContent = response.text || response.segments.map((segment) => segment.text).join(" ");
+        metaBox.textContent = `${response.processing_ms} ms · ${response.model_id} · completed`;
+      } else if (data.type === "error") {
+        throw new Error(data.message || "Streaming transcription failed");
+      }
+    }
+
+    async function transcribeFileWithProgress(body) {
+      body.set("stream", "true");
+      const response = await fetch("/v1/transcribe/file", {
+        method: "POST",
+        headers: authHeaders(),
+        body,
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.detail || "API error");
+      }
+      if (!response.body) {
+        throw new Error("Streaming response body is not available");
+      }
+
+      const events = [];
+      let completedResponse = null;
+      const decoder = new TextDecoder();
+      const reader = response.body.getReader();
+      let buffer = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const event = JSON.parse(line);
+          renderFileStreamEvent(event, events);
+          if (event.type === "completed") completedResponse = event.response;
+        }
+      }
+      buffer += decoder.decode();
+      if (buffer.trim()) {
+        const event = JSON.parse(buffer);
+        renderFileStreamEvent(event, events);
+        if (event.type === "completed") completedResponse = event.response;
+      }
+      if (!completedResponse) {
+        throw new Error("Transcription stream finished without completed event");
+      }
+      return completedResponse;
+    }
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const file = document.querySelector("#file").files[0];
@@ -1639,18 +1705,7 @@
       jsonBox.textContent = "{}";
 
       try {
-        const response = await fetch("/v1/transcribe/file", {
-          method: "POST",
-          headers: authHeaders(),
-          body,
-        });
-        const data = await response.json();
-        jsonBox.textContent = JSON.stringify(data, null, 2);
-        if (!response.ok) {
-          showError(data.detail || "API error");
-          return;
-        }
-        transcriptBox.textContent = data.text || data.segments.map((s) => s.text).join(" ");
+        const data = await transcribeFileWithProgress(body);
         metaBox.textContent = `${data.processing_ms} ms · ${data.model_id}`;
       } catch (error) {
         showError(error.message);

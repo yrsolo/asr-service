@@ -1,4 +1,5 @@
 import base64
+import json
 from array import array
 
 from fastapi.testclient import TestClient
@@ -79,6 +80,43 @@ def test_transcribe_file_with_mock_backend() -> None:
     assert payload["model_id"] == "mock"
     assert payload["segments"][0]["source"] == "mic"
     assert "тестовый" in payload["text"]
+
+
+def test_transcribe_file_stream_with_mock_backend() -> None:
+    client = TestClient(create_app())
+    response = client.post(
+        "/v1/transcribe/file/stream",
+        files={"file": ("sample.wav", b"not-real-audio", "audio/wav")},
+        data={"model_id": "mock", "language": "ru", "source": "mic"},
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/x-ndjson")
+
+    events = [json.loads(line) for line in response.text.splitlines() if line.strip()]
+    event_types = [event["type"] for event in events]
+
+    assert event_types[0] == "accepted"
+    assert "progress" in event_types
+    assert "segment" in event_types
+    assert event_types[-1] == "completed"
+    assert events[-1]["response"]["model_id"] == "mock"
+    assert events[-1]["response"]["segments"][0]["source"] == "mic"
+
+
+def test_transcribe_file_stream_flag_with_mock_backend() -> None:
+    client = TestClient(create_app())
+    response = client.post(
+        "/v1/transcribe/file",
+        files={"file": ("sample.wav", b"not-real-audio", "audio/wav")},
+        data={"model_id": "mock", "language": "ru", "source": "mic", "stream": "true"},
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/x-ndjson")
+    events = [json.loads(line) for line in response.text.splitlines() if line.strip()]
+    assert events[0]["type"] == "accepted"
+    assert events[-1]["type"] == "completed"
 
 
 def test_transcribe_chunk_with_mock_backend() -> None:

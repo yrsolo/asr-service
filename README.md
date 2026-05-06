@@ -132,6 +132,7 @@ On Windows, `run.cmd` opens the service in a separate visible console window. Cl
 - `POST /shutdown`
 - `GET /v1/models`
 - `POST /v1/transcribe/file`
+- `POST /v1/transcribe/file/stream`
 - `POST /v1/transcribe/chunk`
 - `WS /v1/stream`
 

@@ -1,15 +1,18 @@
+import json
 import os
+import queue
 import threading
-from time import perf_counter
 from pathlib import Path
+from time import perf_counter
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from local_asr_service import __version__
-from local_asr_service.backends.base import ASRBackend
+from local_asr_service.backends.base import ASRBackend, TranscriptionStreamEvent
 from local_asr_service.backends.factory import get_backend
 from local_asr_service.config import get_settings
 from local_asr_service.config import load_models_config
@@ -78,6 +81,123 @@ def _schedule_process_shutdown() -> None:
     timer = threading.Timer(0.5, lambda: os._exit(0))
     timer.daemon = True
     timer.start()
+
+
+def _ndjson_line(payload: dict) -> bytes:
+    return (json.dumps(jsonable_encoder(payload), ensure_ascii=False) + "\n").encode("utf-8")
+
+
+def _stream_file_transcription(
+    *,
+    backend: ASRBackend,
+    data: bytes,
+    request_id: str,
+    language: str,
+    source: AudioSource,
+) -> StreamingResponse:
+    events: queue.Queue[TranscriptionStreamEvent | Exception | None] = queue.Queue()
+    started = perf_counter()
+
+    def worker() -> None:
+        try:
+            for event in backend.transcribe_bytes_stream(data, language=language, source=source):
+                events.put(event)
+        except Exception as exc:
+            events.put(exc)
+        finally:
+            events.put(None)
+
+    def body():
+        yield _ndjson_line(
+            {
+                "type": "accepted",
+                "request_id": request_id,
+                "model_id": backend.profile.id,
+                "language": language,
+                "message": "File uploaded, transcription worker started",
+            }
+        )
+        thread = threading.Thread(target=worker, daemon=True)
+        thread.start()
+        segments = []
+        texts = []
+        while True:
+            try:
+                event = events.get(timeout=5)
+            except queue.Empty:
+                yield _ndjson_line(
+                    {
+                        "type": "heartbeat",
+                        "request_id": request_id,
+                        "elapsed_ms": int((perf_counter() - started) * 1000),
+                        "message": "Transcription is still running",
+                    }
+                )
+                continue
+
+            elapsed_ms = int((perf_counter() - started) * 1000)
+            if event is None:
+                break
+            if isinstance(event, Exception):
+                yield _ndjson_line(
+                    {
+                        "type": "error",
+                        "request_id": request_id,
+                        "elapsed_ms": elapsed_ms,
+                        "message": f"ASR backend failed: {event}",
+                    }
+                )
+                break
+            if event.type == "progress":
+                yield _ndjson_line(
+                    {
+                        "type": "progress",
+                        "request_id": request_id,
+                        "elapsed_ms": elapsed_ms,
+                        "message": event.message or "Transcription is running",
+                    }
+                )
+            elif event.type == "segment" and event.segment is not None:
+                segments.append(event.segment)
+                texts.append(event.segment.text)
+                yield _ndjson_line(
+                    {
+                        "type": "segment",
+                        "request_id": request_id,
+                        "elapsed_ms": elapsed_ms,
+                        "seq": event.seq or len(segments),
+                        "segment": event.segment,
+                        "text": event.segment.text,
+                    }
+                )
+            elif event.type == "completed" and event.result is not None:
+                result = event.result
+                if not segments:
+                    segments = list(result.segments)
+                    texts = [segment.text for segment in segments]
+                response = TranscribeResponse(
+                    request_id=request_id,
+                    model_id=backend.profile.id,
+                    language=language,
+                    duration_ms=result.duration_ms,
+                    processing_ms=elapsed_ms,
+                    segments=segments,
+                    text=result.text or " ".join(texts),
+                )
+                yield _ndjson_line(
+                    {
+                        "type": "completed",
+                        "request_id": request_id,
+                        "elapsed_ms": elapsed_ms,
+                        "response": response,
+                    }
+                )
+
+    return StreamingResponse(
+        body(),
+        media_type="application/x-ndjson",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 def create_app() -> FastAPI:
@@ -157,12 +277,22 @@ def create_app() -> FastAPI:
         model_id: str | None = Form(default=None),
         language: str = Form(default="auto"),
         source: AudioSource = Form(default=AudioSource.UNKNOWN),
-    ) -> TranscribeResponse:
+        stream: bool = Form(default=False),
+    ) -> TranscribeResponse | StreamingResponse:
         data = await file.read()
         if not data:
             raise HTTPException(status_code=400, detail="Empty audio file")
-        started = perf_counter()
         backend = _resolve_backend(model_id)
+        if stream:
+            return _stream_file_transcription(
+                backend=backend,
+                data=data,
+                request_id=str(uuid4()),
+                language=language,
+                source=source,
+            )
+
+        started = perf_counter()
         try:
             result = backend.transcribe_bytes(data, language=language, source=source)
         except Exception as exc:
@@ -176,6 +306,34 @@ def create_app() -> FastAPI:
             processing_ms=processing_ms,
             segments=result.segments,
             text=result.text,
+        )
+
+    @app.post(
+        "/v1/transcribe/file/stream",
+        dependencies=[Depends(require_api_key)],
+        tags=["transcription"],
+        summary="Transcribe a complete audio file with progress events",
+        description=(
+            "Accepts multipart audio files and streams newline-delimited JSON events: "
+            "accepted, progress, heartbeat, segment, completed, or error."
+        ),
+    )
+    async def transcribe_file_stream(
+        file: UploadFile = File(...),
+        model_id: str | None = Form(default=None),
+        language: str = Form(default="auto"),
+        source: AudioSource = Form(default=AudioSource.UNKNOWN),
+    ) -> StreamingResponse:
+        data = await file.read()
+        if not data:
+            raise HTTPException(status_code=400, detail="Empty audio file")
+        backend = _resolve_backend(model_id)
+        return _stream_file_transcription(
+            backend=backend,
+            data=data,
+            request_id=str(uuid4()),
+            language=language,
+            source=source,
         )
 
     @app.post(

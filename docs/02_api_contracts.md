@@ -160,6 +160,7 @@ Request: `multipart/form-data`
 | `model_id` | string | no | model profile id; default profile is used when omitted |
 | `language` | string | no | `ru`, `en`, or `auto` |
 | `source` | string | no | `mic`, `system`, `mixed`, or `unknown` |
+| `stream` | boolean | no | when `true`, return `application/x-ndjson` progress events instead of waiting for the final JSON response |
 
 Response:
 
@@ -174,6 +175,46 @@ Response:
   "text": "..."
 }
 ```
+
+## POST /v1/transcribe/file/stream
+
+Use this endpoint for large complete files when the client needs progress and must not wait on a silent HTTP response. The old `/v1/transcribe/file` endpoint remains unchanged for simple clients, and can also return the same stream when `stream=true` is passed in the multipart form.
+
+Request: same `multipart/form-data` fields as `/v1/transcribe/file`.
+
+Response content type:
+
+```text
+application/x-ndjson
+```
+
+Each line is one JSON event:
+
+```json
+{"type": "accepted", "request_id": "uuid", "model_id": "fw-medium-int8-fp16", "language": "ru", "message": "File uploaded, transcription worker started"}
+{"type": "progress", "request_id": "uuid", "elapsed_ms": 125, "message": "Audio loaded, ASR decode started"}
+{"type": "heartbeat", "request_id": "uuid", "elapsed_ms": 5125, "message": "Transcription is still running"}
+{"type": "segment", "request_id": "uuid", "elapsed_ms": 6800, "seq": 1, "segment": {}, "text": "..."}
+{"type": "completed", "request_id": "uuid", "elapsed_ms": 15420, "response": {}}
+```
+
+Event types:
+
+| Type | Description |
+|---|---|
+| `accepted` | Upload was accepted and backend worker started |
+| `progress` | Backend reached a known processing stage |
+| `heartbeat` | No new segment is ready yet, but processing is still alive |
+| `segment` | One final transcript segment is ready; append or display immediately |
+| `completed` | Final response is ready; `response` has the same shape as `/v1/transcribe/file` |
+| `error` | Backend failed after streaming had started; `message` contains the reason |
+
+Client behavior:
+
+- Read the response incrementally line by line.
+- Show `heartbeat`/`progress` as activity indicators.
+- Append `segment.text` for visible progress.
+- Treat `completed.response` as the authoritative final result.
 
 ## POST /v1/transcribe/chunk
 
