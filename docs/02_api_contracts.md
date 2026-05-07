@@ -109,7 +109,7 @@ Response:
 ```
 
 `gpu_available` is best-effort CUDA detection through CTranslate2.
-`cuda_device_index` is the runtime override from `LOCAL_ASR_CUDA_DEVICE_INDEX`.
+`cuda_device_index` is the effective runtime CUDA index. If `NVIDIA_VISIBLE_DEVICES` contains one GPU UUID, the service maps that UUID to the visible container index and reports the mapped value.
 
 ## POST /shutdown
 

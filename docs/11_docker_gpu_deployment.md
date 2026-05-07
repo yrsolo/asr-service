@@ -217,6 +217,33 @@ device_ids:
 
 or the selected GPU UUID.
 
+On Docker Desktop / WSL, `nvidia-smi` inside the container may still list several GPUs even when one UUID is configured. In that case the important value is the CUDA index used by the ASR process. The service now resolves a single UUID from `NVIDIA_VISIBLE_DEVICES` to the matching visible `nvidia-smi` index at runtime.
+
+Example: if `.env` contains:
+
+```env
+NVIDIA_VISIBLE_DEVICES=GPU-625140a3-7883-808e-d15a-4b630bf94ef3
+LOCAL_ASR_CUDA_DEVICE_INDEX=0
+```
+
+but container `nvidia-smi` shows:
+
+```text
+0, GPU-c11608a2-fa23-6399-d77b-bb8719fb2e1a
+1, GPU-120ee067-90c0-9f37-cb07-6879e7c3adda
+2, GPU-625140a3-7883-808e-d15a-4b630bf94ef3
+```
+
+the service will use CUDA device index `2`, because that is where the selected UUID is visible inside the container.
+
+Check what the service resolved:
+
+```bash
+docker compose -f docker-compose.gpu.yml run --rm local-asr-service python3.11 scripts/debug_model_load.py --model fw-medium-int8 --skip-transcribe
+```
+
+Look at `selected_device_index` in the JSON output.
+
 ## Useful Commands
 
 Logs:

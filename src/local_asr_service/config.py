@@ -1,5 +1,7 @@
 from functools import lru_cache
+import os
 from pathlib import Path
+import subprocess
 from typing import Literal
 
 import yaml
@@ -57,6 +59,50 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def _cuda_index_for_visible_uuid(gpu_uuid: str) -> int | None:
+    cmd = [
+        "nvidia-smi",
+        "--query-gpu=index,uuid",
+        "--format=csv,noheader,nounits",
+    ]
+    try:
+        completed = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=10)
+    except Exception:
+        return None
+
+    for line in completed.stdout.strip().splitlines():
+        parts = [part.strip() for part in line.split(",")]
+        if len(parts) != 2:
+            continue
+        index, visible_uuid = parts
+        if visible_uuid == gpu_uuid:
+            try:
+                return int(index)
+            except ValueError:
+                return None
+    return None
+
+
+def resolve_cuda_device_index(profile_device_index: int | None = None) -> int | None:
+    """Resolve the CUDA index the process should pass to CTranslate2.
+
+    Docker Desktop / WSL can show multiple GPUs inside the container even when
+    NVIDIA_VISIBLE_DEVICES contains one UUID. In that case CUDA indices are not
+    remapped to 0, so prefer the UUID-to-visible-index mapping over the manual
+    LOCAL_ASR_CUDA_DEVICE_INDEX value.
+    """
+    visible_devices = (os.getenv("NVIDIA_VISIBLE_DEVICES") or "").strip()
+    if visible_devices.startswith("GPU-") and "," not in visible_devices:
+        uuid_index = _cuda_index_for_visible_uuid(visible_devices)
+        if uuid_index is not None:
+            return uuid_index
+
+    settings = get_settings()
+    if settings.cuda_device_index is not None:
+        return settings.cuda_device_index
+    return profile_device_index
 
 
 @lru_cache

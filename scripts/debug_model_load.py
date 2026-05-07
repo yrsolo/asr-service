@@ -16,7 +16,7 @@ SRC_DIR = ROOT_DIR / "src"
 if SRC_DIR.exists():
     sys.path.insert(0, str(SRC_DIR))
 
-from local_asr_service.config import get_settings, load_models_config  # noqa: E402
+from local_asr_service.config import load_models_config, resolve_cuda_device_index  # noqa: E402
 
 
 def _nvidia_smi() -> dict:
@@ -85,14 +85,11 @@ def main() -> None:
     parser.add_argument("--skip-transcribe", action="store_true", help="Only load the model.")
     args = parser.parse_args()
 
-    settings = get_settings()
     cfg = load_models_config()
     profile = cfg.get_profile(args.model)
     device_index = args.device_index
     if device_index is None:
-        device_index = settings.cuda_device_index
-    if device_index is None:
-        device_index = profile.device_index
+        device_index = resolve_cuda_device_index(profile.device_index)
     if device_index is None:
         device_index = 0
 
